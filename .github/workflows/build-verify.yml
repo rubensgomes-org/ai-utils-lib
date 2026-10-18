@@ -1,0 +1,36 @@
+# =============================================================================
+# Python Build and Verify
+#
+# Installs dependencies, then runs static type checking, static code
+# analysis, and unit test coverage. Runs on push or manual dispatch; the
+# SonarCloud scan and quality gate run only when dispatched with run-sonar
+# checked.
+# =============================================================================
+name: Python Build and Verify
+
+on:
+    push:
+    workflow_dispatch:
+        inputs:
+            run-sonar:
+                description: 'Run the SonarCloud analysis and quality gate.'
+                required: false
+                type: boolean
+                default: false
+
+permissions:
+    contents: read
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: false
+
+jobs:
+    build-verify:
+        name: Run static analysis, tests, and optional SonarCloud scan
+        uses: rubensgomes-org/azure-workflows/.github/workflows/poetry-build-verify.yml@v0
+        with:
+            run-sonar: ${{ inputs.run-sonar == true }}
+        secrets:
+            # Required only when dispatched with run-sonar checked.
+            sonar-token: ${{ secrets.SONAR_TOKEN }}

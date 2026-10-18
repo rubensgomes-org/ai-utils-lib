@@ -1,0 +1,181 @@
+###############################################################################
+# Claude Code (Anthropic)
+###############################################################################
+
+# Local / personal Claude Code settings (DO NOT COMMIT)
+**/.claude/settings.local.json
+**/.claude/CLAUDE.local.md
+
+# Claude Code session history, caches, analytics
+**/.claude/projects/
+**/.claude/statsig/
+
+# MCP user-level config (if accidentally created in repo)
+.claude.json
+
+###############################################################################
+# Python
+###############################################################################
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+.python-version
+.venv/
+
+# PyCharm / VS Code / Editors
+.idea/
+.vscode/
+*.code-workspace
+
+# Distribution / packaging
+build/
+dist/
+.eggs/
+*.egg-info/
+.eggs
+.Python
+wheels/
+pip-wheel-metadata/
+
+# uv lock file (project uses Poetry; poetry.lock is authoritative)
+uv.lock
+
+# PyInstaller
+*.manifest
+*.spec
+
+###############################################################################
+# Jupyter / Notebooks
+###############################################################################
+
+.ipynb_checkpoints/
+*.nbconvert.ipynb
+
+###############################################################################
+# Testing / Coverage
+###############################################################################
+
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.cache
+
+###############################################################################
+# Logs / Runtime
+###############################################################################
+
+*.log
+logs/
+tmp/
+temp/
+
+###############################################################################
+# OS / System
+###############################################################################
+
+.DS_Store
+Thumbs.db
+
+###############################################################################
+# AI / ML Artifacts (adjust as needed)
+###############################################################################
+
+# Model weights & checkpoints
+*.ckpt
+*.pt
+*.pth
+*.onnx
+*.safetensors
+
+# Dataset caches
+data/cache/
+datasets/cache/
+wandb/
+mlruns/
+
+###############################################################################
+# Secrets (always keep ignored)
+###############################################################################
+
+.env.*
+*.key
+*.pem
+*.crt
+secrets/
+
+# Local working notes. Kept out of this public repository because they hold
+# host/infrastructure details (VPS addresses, DNS records).
+TODO.md
+
+# IDE
+*.swp
+*.swo
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### AI plan files ###
+misc/tasks/
+*.bkp
+
+### ---------- >>> Secrets <<< ---------- ###
+# Core secrets files
+.env.local
+.env.*.local
+
+# API keys and certificates
+*.cer
+*.pub
+*.pfx
+*.p12
+*.keystore
+*.jks
+id_rsa
+id_dsa
+id_ecdsa
+id_ed25519
+jwt.secret
+certs/
+
+###############################################################################
+# Sonar (static analysis built files)
+###############################################################################
+
+# SonarQube scanner files
+.sonar/
+.scannerwork/
+**/.scannerwork/
+
+# SonarLint local files (if using IDE plugins)
+.sonarlint/
+
+# do not added coverage results
+coverage.xml
+
+# drawio backup files
+*.bkp

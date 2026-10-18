@@ -1,0 +1,133 @@
+[project]
+name = "ai-utils-lib"
+keywords = ["ai", "config", "llm", "mcp", "agentic"]
+version = "0.0.1"
+description = "AI Utils Library."
+authors = [
+    { name = "Rubens Gomes", email = "rubens.s.gomes@gmail.com" }
+]
+maintainers = [
+  { name = "Rubens Gomes", email = "rubens.s.gomes@gmail.com" }
+]
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.14,<4.0.0"
+classifiers = [
+    # How mature is this project? Common values are
+    #   3 - Alpha
+    #   4 - Beta
+    #   5 - Production/Stable
+    "Development Status :: 4 - Beta",
+    # Python versions supported.
+    "Programming Language :: Python :: 3.14"
+]
+dependencies = [
+    "colorlog (>=6.12.0,<7)",
+    "pydantic (>=2.13.5,<3)",
+    "pyyaml (>=6.0.3,<7)",
+    # Azure dependencies
+    "azure-appconfiguration-provider (>=2.5,<3)",
+    "azure-identity (>=1.26,<2)",
+    "azure-keyvault-secrets (>=4.11,<5)",
+    "aiohttp (>=3.13,<4)",
+]
+
+[build-system]
+requires = ["poetry-core>=2.5,<3"]
+build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+dev = [
+    "black (>=26.10,<27)",
+    "flake8 (>=7.4,<8)",
+    "isort (>=9.0,<10)",
+    "mypy (>=2.4,<3)",
+    "pip-audit (>=2.10,<3)",
+    "poethepoet (>=0.48,<1)",
+    "poetry (>=2.5,<3)",
+    "pylint (>=4.1,<5)",
+    "pysonar (>=1.9,<3)",
+    "types-pyyaml (>=6.0,<7)",
+    "uv (>=0.13,<1)",
+]
+test = [
+    "coverage (>=7.16,<8)",
+    "pytest (>=9.1,<10)",
+    "pytest-asyncio (>=1.4,<2)",
+    "pytest-cov (>=7.1,<8)",
+    "pytest-mock (>=3.15,<4)",
+]
+
+[project.urls]
+Homepage = "https://github.com/rubensgomes-org/ai-utils-lib/"
+Documentation = "https://github.com/rubensgomes-org/ai-utils-lib/blob/main/README.md"
+Repository = "https://github.com/rubensgomes-org/ai-utils-lib/"
+
+################################################################################
+# ---------- >>> Tools <<< -----------------------------------------------------
+################################################################################
+
+[tool.black]
+line-length = 80
+target-version = ["py314"]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 90
+
+[tool.coverage.run]
+source = ["ai_utils_lib"]
+branch = true
+
+[tool.isort]
+line_length = 80
+profile = "black"
+
+[tool.mypy]
+mypy_path = "src"
+ignore_missing_imports = true
+
+[tool.poetry]
+packages = [{ include = "ai_utils_lib", from = "src" }]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+addopts = "--cov --cov-report=term-missing --cov-report=xml"
+
+[tool.sonar]
+# SONAR_TOKEN must be defined as an environment variable
+organization = "rubensgomes-org"
+projectKey = "rubensgomes-org_ai-utils-lib"
+projectName = "ai-utils-lib"
+qualitygate.wait = true
+sources = "src/"
+sourceEncoding = "UTF-8"
+python.version = "3.14"
+
+# ---------- >>> poethepoet tasks <<< -----------------------------------------
+
+# To run a poe task:
+# `poetry run poe <task-name>` OR
+# `poe <task-name` (e.g., poe clean)
+
+[tool.poe.tasks]
+# Poe the Poetry "poethepoet" task runner needs to be installed.
+# Define individual cleanup tasks
+_clean_cache = "poetry cache clear --all"
+_clean_misc = "rm -rf  .mypy_cache dist build"
+_clean_pyc = "find . -name '*.pyc' -delete"
+_clean_pycache = "find . -name '__pycache__' -type d -exec rm -rf {} +"
+_clean_pytest = "rm -rf .pytest_cache"
+_clean_venv = "poetry env remove --all"
+
+# Combine them into one 'clean' command.  Similar to `make clean`
+[tool.poe.tasks.clean]
+sequence = [
+    "_clean_cache",
+    "_clean_misc",
+    "_clean_pyc",
+    "_clean_pycache",
+    "_clean_pytest",
+    "_clean_venv",
+]
+help = "Remove all project artifacts"

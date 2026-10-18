@@ -1,0 +1,109 @@
+# =============================================================================
+# Release to PyPI
+#
+# Runs the same checks as build-verify (the verify job must pass before
+# anything is pushed or published), then resolves the version from
+# pyproject.toml, verifies CHANGELOG.md has a matching section, builds the
+# package, publishes it to PyPI, publishes a GitHub Release with the
+# CHANGELOG section as its notes, then bumps pyproject.toml to the next
+# patch version for the next development cycle.
+# Dispatch-only: run it once the release version, CHANGELOG, and tag are
+# already committed and pushed to main.
+# =============================================================================
+name: Release to PyPI
+
+on:
+  workflow_dispatch:
+    inputs:
+      run-sonar:
+        description: 'Run the SonarCloud analysis and quality gate.'
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  # Same reusable workflow as build-verify.yml, so a release runs exactly
+  # the checks and tests that build-verify runs.
+  verify:
+    name: Run static analysis, tests, and SonarCloud scan
+    uses: rubensgomes-org/azure-workflows/.github/workflows/poetry-build-verify.yml@v0
+    with:
+      run-sonar: ${{ inputs.run-sonar }}
+    secrets:
+      sonar-token: ${{ secrets.SONAR_TOKEN }}
+
+  publish:
+    name: Build and publish package to PyPI
+    needs: verify
+    permissions:
+      contents: write
+    uses: rubensgomes-org/azure-workflows/.github/workflows/poetry-publish-pypi.yml@v0
+    secrets:
+      pypi-token: ${{ secrets.PYPI_API_TOKEN }}
+
+  release:
+    name: Publish GitHub Release and bump the version
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    timeout-minutes: 15
+
+    steps:
+      # The branch tip, not the triggering commit: publish pushed a
+      # CHANGELOG.md commit that the version bump must build on.
+      - name: Check out the repository
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.ref_name }}
+
+      - name: Download the release notes
+        uses: actions/download-artifact@v8
+        with:
+          name: release-notes
+
+      - name: Set up Python and Poetry
+        uses: rubensgomes-org/azure-workflows/.github/actions/setup-python-poetry@v0
+
+      - name:  Publish GitHub Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ needs.publish.outputs.tag }}
+        run: |
+          echo "=============================================================="
+          echo " STEP: Publish GitHub Release"
+          echo "=============================================================="
+          set -euo pipefail
+
+          gh release create "${RELEASE_TAG}" \
+            --title "${RELEASE_TAG}" \
+            --notes-file release-notes.md
+
+      - name: Bump the version for the next development cycle
+        shell: bash
+        env:
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          echo "=============================================================="
+          echo " STEP: Bump the version for the next development cycle"
+          echo "=============================================================="
+          set -euo pipefail
+
+          poetry version patch
+          next_version="$(poetry version -s)"
+
+          git config user.name "github-actions[bot]"
+          git config user.email \
+            "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add pyproject.toml
+          git commit -m "Bump version to ${next_version}"
+          git push origin "HEAD:${BRANCH}"
