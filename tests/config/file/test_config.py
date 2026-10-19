@@ -12,7 +12,7 @@ import yaml
 from pydantic import ValidationError
 
 from ai_utils_lib.config.file.config import configure_logging, load_config
-from ai_utils_lib.config.models import AppConfig
+from ai_utils_lib.config.models import AppConfig, Web
 from ai_utils_lib.constants import CONFIG_FILE_NAME
 
 BUNDLED_CONFIG_PACKAGE = "ai_utils_lib.config"
@@ -145,9 +145,7 @@ def test_load_config_rejects_non_mapping_yaml(
         load_config(package)
 
 
-@pytest.mark.parametrize(
-    "section", ["azure", "foundry", "mcp", "model", "web", "logging"]
-)
+@pytest.mark.parametrize("section", ["azure", "foundry", "model", "logging"])
 def test_load_config_rejects_missing_section(
     make_package: PackageFactory,
     valid_config: dict[str, Any],
@@ -158,6 +156,19 @@ def test_load_config_rejects_missing_section(
 
     with pytest.raises(ValidationError, match=section):
         load_config(package)
+
+
+def test_load_config_defaults_missing_optional_sections(
+    make_package: PackageFactory, valid_config: dict[str, Any]
+) -> None:
+    del valid_config["mcp"]
+    del valid_config["web"]
+    package = make_package(yaml.safe_dump(valid_config))
+
+    config = load_config(package)
+
+    assert config.mcp == {}
+    assert config.web == Web()
 
 
 def test_load_config_raises_when_config_file_missing(

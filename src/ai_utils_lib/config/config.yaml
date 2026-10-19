@@ -26,6 +26,7 @@ foundry:
 
 # ====================================================================
 # MCP Configuration
+# Optional section: may be completely removed
 # ====================================================================
 mcp:
     calculator:
@@ -63,6 +64,7 @@ model:
 
 # ====================================================================
 # Web App Configuration (e.g., used by FastAPI web app server)
+# Optional section: may be completely removed
 # ====================================================================
 web:
     host: "127.0.0.1"

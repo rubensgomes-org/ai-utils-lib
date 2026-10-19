@@ -94,7 +94,7 @@ class AppConfig(_FrozenModel):
 
     azure: Azure
     foundry: Foundry
-    mcp: dict[str, MCP]
+    mcp: dict[str, MCP] = Field(default_factory=dict)
     model: Model
-    web: Web
+    web: Web = Field(default_factory=Web)
     logging: dict[str, Any]
