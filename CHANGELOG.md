@@ -11,7 +11,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Breaking:** config models are frozen; assigning an attribute raises
+  `ValidationError`. Use `model_copy(update=...)` to derive a modified
+  copy.
+- Depend on `azure-appconfiguration` instead of
+  `azure-appconfiguration-provider`.
+
 ### Fixed
+
+- `Model` keeps an explicitly given `api_key` instead of overwriting it
+  from `api_key_env`, so a `model/api_key` App Configuration setting
+  now takes effect and Key Vault is skipped.
+- The Azure loader appends `app_config_separator` to an
+  `app_config_prefix` lacking it, so settings are no longer dropped and
+  keys of sibling prefixes (e.g., `ai-utils-other/`) are no longer read.
+- The Azure loader rejects setting keys with empty segments
+  (e.g., `model//name`) instead of ignoring them.
+- Empty `app_config_separator` and `secret_separator` values are rejected
+  with a `ValidationError`, and the Azure loader validates the `azure`
+  section before querying App Configuration.
 
 ## [0.0.5] - 2026-10-19
 

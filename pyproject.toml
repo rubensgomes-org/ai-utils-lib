@@ -26,7 +26,7 @@ dependencies = [
     "pydantic (>=2.13.5,<3)",
     "pyyaml (>=6.0.3,<7)",
     # Azure dependencies
-    "azure-appconfiguration-provider (>=2.5,<3)",
+    "azure-appconfiguration (>=1.10,<2)",
     "azure-identity (>=1.26,<2)",
     "azure-keyvault-secrets (>=4.11,<5)",
     "aiohttp (>=3.13,<4)",

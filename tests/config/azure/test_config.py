@@ -5,9 +5,11 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from azure.appconfiguration import ConfigurationSetting
+from pydantic import ValidationError
 from pytest_mock import MockerFixture
 
 from ai_utils_lib.config.azure.config import load_config
+from ai_utils_lib.config.file.config import read_yaml, resolve_config_path
 
 MODULE = "ai_utils_lib.config.azure.config"
 BUNDLED_CONFIG_PACKAGE = "ai_utils_lib.config"
@@ -107,6 +109,47 @@ def test_load_config_rejects_setting_conflicting_with_section(
     ]
 
     with pytest.raises(ValueError, match="conflicts"):
+        load_config(BUNDLED_CONFIG_PACKAGE, ENDPOINT, LABEL_FILTER)
+
+
+def test_load_config_rejects_empty_separator(
+    mocker: MockerFixture, list_settings_mock: AsyncMock
+) -> None:
+    config_dict = read_yaml(resolve_config_path(BUNDLED_CONFIG_PACKAGE))
+    config_dict["azure"]["app_config_separator"] = ""
+    mocker.patch(f"{MODULE}.read_yaml", return_value=config_dict)
+
+    with pytest.raises(ValidationError):
+        load_config(BUNDLED_CONFIG_PACKAGE, ENDPOINT, LABEL_FILTER)
+
+    list_settings_mock.assert_not_awaited()
+
+
+def test_load_config_completes_prefix_with_separator(
+    mocker: MockerFixture,
+    list_settings_mock: AsyncMock,
+    credential_mock: MagicMock,
+) -> None:
+    config_dict = read_yaml(resolve_config_path(BUNDLED_CONFIG_PACKAGE))
+    config_dict["azure"]["app_config_prefix"] = PREFIX.removesuffix("/")
+    mocker.patch(f"{MODULE}.read_yaml", return_value=config_dict)
+    list_settings_mock.return_value = [_setting("model/name", "azure-model")]
+
+    config = load_config(BUNDLED_CONFIG_PACKAGE, ENDPOINT, LABEL_FILTER)
+
+    list_settings_mock.assert_awaited_once_with(
+        credential_mock, ENDPOINT, f"{PREFIX}*", LABEL_FILTER
+    )
+    assert config.model.name == "azure-model"
+
+
+@pytest.mark.parametrize("key", ["/model/name", "model//name", "model/"])
+def test_load_config_rejects_setting_with_empty_segment(
+    list_settings_mock: AsyncMock, key: str
+) -> None:
+    list_settings_mock.return_value = [_setting(key, "value")]
+
+    with pytest.raises(ValueError, match="empty segment"):
         load_config(BUNDLED_CONFIG_PACKAGE, ENDPOINT, LABEL_FILTER)
 
 

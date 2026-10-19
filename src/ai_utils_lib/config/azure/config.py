@@ -70,16 +70,17 @@ async def _load_config_with_credential(
     label_filter: str,
 ) -> AppConfig:
     """Return ``config_dict`` overlaid with settings, with the API key."""
-    app_config_prefix: str = config_dict["azure"]["app_config_prefix"]
-    app_config_separator: str = config_dict["azure"]["app_config_separator"]
+    azure = Azure.model_validate(config_dict.get("azure"))
     logger.debug(
-        "prefix: %s, separator: %s", app_config_prefix, app_config_separator
+        "prefix: %s, separator: %s",
+        azure.app_config_prefix,
+        azure.app_config_separator,
     )
     settings_dict: dict[str, Any] = await _convert_to_dict(
         credential,
         appcs_endpoint,
-        app_config_separator,
-        app_config_prefix,
+        azure.app_config_separator,
+        azure.app_config_prefix,
         label_filter,
     )
     config = AppConfig.model_validate(_deep_merge(config_dict, settings_dict))
@@ -127,9 +128,12 @@ async def _convert_to_dict(
 ) -> dict[str, Any]:
     """Return the settings under ``prefix`` as a nested dictionary.
 
-    The prefix is removed and the remaining key is split on ``/``, e.g.
+    ``prefix`` is completed with a trailing ``separator`` if missing, then
+    removed, and the remaining key is split on ``separator``, e.g.
     ``prefix/model/name = x`` becomes ``{"model": {"name": "x"}}``.
     """
+    if not prefix.endswith(separator):
+        prefix = f"{prefix}{separator}"
     key_filter: str = f"{prefix}*"
     settings: list[ConfigurationSetting] = await list_settings(
         credential, appcs_endpoint, key_filter, label_filter
@@ -148,6 +152,8 @@ async def _convert_to_dict(
 
 def _set_nested(target: dict[str, Any], keys: list[str], value: Any) -> None:
     """Set ``value`` in ``target`` at the nested path given by ``keys``."""
+    if not all(keys):
+        raise ValueError(f"Setting path {keys} has an empty segment")
     *parents, leaf = keys
     node: dict[str, Any] = target
     for key in parents:
