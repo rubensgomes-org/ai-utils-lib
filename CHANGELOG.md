@@ -26,5 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Test coverage excludes `if __name__ == "__main__":` blocks.
 - `read_yaml` and `resolve_config_path` in `file.config` are public.
+- `scripts/initvars.sh` manages only the `PYPI_API_TOKEN` and `SONAR_TOKEN`
+  secrets the workflows use, and deletes the Azure, Terraform and model API
+  key variables and secrets it used to manage.
 
 ### Fixed
