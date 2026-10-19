@@ -29,5 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `scripts/initvars.sh` manages only the `PYPI_API_TOKEN` and `SONAR_TOKEN`
   secrets the workflows use, and deletes the Azure, Terraform and model API
   key variables and secrets it used to manage.
+- The `azure` section requires `app_config_prefix`; `app_config_separator`
+  defaults to `/`.
+- `mcp.<name>.token_dir` defaults to `~/.oauth_tokens`.
 
 ### Fixed

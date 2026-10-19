@@ -6,7 +6,7 @@
 # ====================================================================
 azure:
     # App Configuration prefix
-    app_config_prefix: "ai-utils-lib/"
+    app_config_prefix: "ai-utils"
     # app configuration prefix separator
     app_config_separator: "/"
     # Key Vault prefix
@@ -28,7 +28,7 @@ mcp:
         #is_oauth: false
         is_oauth: true
         # location to store OAuth token in the local machine
-        token_dir: "~/.calculator_mcp"
+        token_dir: "~/.oauth_tokens"
         # local port temporarily used by the OAuth callback
         callback_port: 10000
 

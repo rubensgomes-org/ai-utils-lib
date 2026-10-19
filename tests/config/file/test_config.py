@@ -52,7 +52,10 @@ def make_package(
 @pytest.fixture
 def valid_config() -> dict[str, Any]:
     return {
-        "azure": {"secret_prefix": "test-prefix--"},
+        "azure": {
+            "app_config_prefix": "test-prefix/",
+            "secret_prefix": "test-prefix--",
+        },
         "foundry": {"project_endpoint": "https://example.com/foundry"},
         "mcp": {"calc": {"url": "https://example.com/mcp", "token_dir": "~"}},
         "model": {

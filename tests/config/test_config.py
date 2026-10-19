@@ -14,7 +14,7 @@ from ai_utils_lib.config.file.config import load_config as load_file_config
 AZURE_MODULE = "ai_utils_lib.config.azure.config"
 BUNDLED_CONFIG_PACKAGE = "ai_utils_lib.config"
 ENDPOINT = "https://appcs-test.azconfig.io"
-PREFIX = "ai-utils-lib/"
+PREFIX = "ai-utils"
 LABEL = "lab"
 
 

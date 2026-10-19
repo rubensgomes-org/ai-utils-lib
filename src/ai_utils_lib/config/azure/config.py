@@ -29,10 +29,18 @@ def load_config(
 
     Must not be called from a running event loop.
     """
+    logger.debug(
+        "Loading Azure App Configuration with package: %s, "
+        "appcs_endpoint: %s, label_filter: %s",
+        package,
+        appcs_endpoint,
+        label_filter,
+    )
     config_yaml_file: Traversable = resolve_config_path(package)
     config_dict: dict[str, Any] = read_yaml(config_yaml_file)
     prefix: str = config_dict["azure"]["app_config_prefix"]
     separator: str = config_dict["azure"]["app_config_separator"]
+    logger.debug("prefix: %s, separator: %s", prefix, separator)
     settings_dict: dict[str, Any] = asyncio.run(
         _convert_to_dict(appcs_endpoint, separator, prefix, label_filter)
     )

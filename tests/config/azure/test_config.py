@@ -12,7 +12,7 @@ from ai_utils_lib.config.azure.config import load_config
 MODULE = "ai_utils_lib.config.azure.config"
 BUNDLED_CONFIG_PACKAGE = "ai_utils_lib.config"
 ENDPOINT = "https://appcs-test.azconfig.io"
-PREFIX = "ai-utils-lib/"
+PREFIX = "ai-utils"
 LABEL_FILTER = "lab"
 
 

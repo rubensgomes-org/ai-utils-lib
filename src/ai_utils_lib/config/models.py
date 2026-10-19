@@ -17,6 +17,8 @@ __all__ = ["Azure", "Foundry", "MCP", "Model", "Web", "AppConfig"]
 class Azure(BaseModel):
     """The ``azure`` section of config.yaml."""
 
+    app_config_prefix: str
+    app_config_separator: str = "/"
     secret_prefix: str
 
 
@@ -31,7 +33,7 @@ class MCP(BaseModel):
 
     url: HttpUrl
     is_oauth: bool = False
-    token_dir: str
+    token_dir: str = "~/.oauth_tokens"
     callback_port: int = Field(default=DEFAULT_OAUTH_CALLBACK_PORT, gt=0)
 
 
