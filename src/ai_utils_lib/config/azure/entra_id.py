@@ -29,6 +29,7 @@ def token_provider(
 
 
 if __name__ == "__main__":
+    # TESTING ONLY!!!
     _VISIBLE_CHARS = 4
 
     async def _main() -> None:

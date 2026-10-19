@@ -50,6 +50,7 @@ async def read_secret(vault_url: str, secret_name: str) -> str:
 
 
 if __name__ == "__main__":
+    # TESTING ONLY!!!
     _KEY_VAULT_URI = "https://kv-rgomes-lab.vault.azure.net/"
     _SECRET_NAME = "ca-mathagent--FOUNDRY-API-KEY"
     _VISIBLE_CHARS = 4

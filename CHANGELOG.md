@@ -15,10 +15,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `read_secret` reads a non-empty Azure Key Vault secret.
 - `token_provider` returns an Entra ID token callable for the `api_key` of
   `openai.AsyncOpenAI`.
+- `azure.config.load_config` overlays `config.yaml` with App Configuration
+  settings under `azure.app_config_prefix`, split on
+  `azure.app_config_separator`.
+- `config.load_config` uses App Configuration when `APP_CONFIG_ENDPOINT` is
+  set, labeled `APP_ENV`, and `config.yaml` alone otherwise.
 - Unit tests for all modules, using `pytest-mock`.
 
 ### Changed
 
 - Test coverage excludes `if __name__ == "__main__":` blocks.
+- `read_yaml` and `resolve_config_path` in `file.config` are public.
 
 ### Fixed

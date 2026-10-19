@@ -57,9 +57,11 @@ async def list_settings(
 
 
 if __name__ == "__main__":
+    # TESTING ONLY!!!
     _APP_CONFIG_ENDPOINT = "https://appcs-rgomes-lab.azconfig.io"
+    _KEY_FILTER = "ai-utils-lib/*"
     settings = asyncio.run(
-        list_settings(_APP_CONFIG_ENDPOINT, "ca-mathagent/*", "lab")
+        list_settings(_APP_CONFIG_ENDPOINT, _KEY_FILTER, "lab")
     )
     for setting in settings:
         print(f"{setting.key} = {setting.value}")

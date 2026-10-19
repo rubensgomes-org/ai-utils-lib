@@ -6,7 +6,9 @@
 # ====================================================================
 azure:
     # App Configuration prefix
-    app_config_prefix: "dummy-ac-prefix/"
+    app_config_prefix: "ai-utils-lib/"
+    # app configuration prefix separator
+    app_config_separator: "/"
     # Key Vault prefix
     secret_prefix: "dummy-kv-prefix--"
 
