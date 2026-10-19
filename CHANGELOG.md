@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+### Fixed
+
+## [0.0.6] - 2026-10-19
+
+### Added
+
+### Changed
+
 - **Breaking:** config models are frozen; assigning an attribute raises
   `ValidationError`. Use `model_copy(update=...)` to derive a modified
   copy.
