@@ -9,7 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `Azure.secret_separator`, defaulting to `--`.
+
 ### Changed
+
+- The Azure loader reads `Model.api_key` from the Key Vault at
+  `KEY_VAULT_URI`, in secret `secret_prefix` + `secret_separator` +
+  `api_key_env`, with `_` replaced by `-`, unless the variable named by
+  `api_key_env` holds the key.
+- Breaking: `list_settings` and `read_secret` take an
+  `AsyncTokenCredential` first argument, owned by the caller.
+- Breaking: `secret_prefix` excludes the separator, and
+  `app_config_prefix` must end with `app_config_separator`.
+- Bundled `config.yaml`: `web.host` is `127.0.0.1`, and the `calculator`
+  MCP server is `http://127.0.0.1:8080/mcp` without OAuth.
 
 ### Fixed
 

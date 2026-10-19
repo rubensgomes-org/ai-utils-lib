@@ -3,6 +3,7 @@
 import asyncio
 import logging
 
+from azure.core.credentials_async import AsyncTokenCredential
 from azure.identity.aio import DefaultAzureCredential
 from azure.keyvault.secrets.aio import SecretClient
 
@@ -28,16 +29,16 @@ logger = logging.getLogger(__name__)
 # shared Key Vault store (e.g., https://kv-rgomes-lab.vault.azure.net/)
 
 
-async def read_secret(vault_url: str, secret_name: str) -> str:
-    """Return the non-empty value of secret ``secret_name`` in ``vault_url``."""
-    # DefaultAzureCredential tries, in order:
-    #   1. Environment variables (e.g., AZURE_CLIENT_ID, AZURE_TENANT_ID)
-    #   2. Managed identity (e.g., the UAMI of an Azure Container App)
-    #   3. Your Azure CLI login
-    async with (
-        DefaultAzureCredential() as credential,
-        SecretClient(vault_url=vault_url, credential=credential) as client,
-    ):
+async def read_secret(
+    credential: AsyncTokenCredential, vault_url: str, secret_name: str
+) -> str:
+    """Return the non-empty value of secret ``secret_name`` in ``vault_url``.
+
+    ``credential`` is owned, and closed, by the caller.
+    """
+    async with SecretClient(
+        vault_url=vault_url, credential=credential
+    ) as client:
         logger.debug(
             "Reading secret: %s from Key Vault: %s", secret_name, vault_url
         )
@@ -54,7 +55,12 @@ if __name__ == "__main__":
     _KEY_VAULT_URI = "https://kv-rgomes-lab.vault.azure.net/"
     _SECRET_NAME = "ca-mathagent--FOUNDRY-API-KEY"
     _VISIBLE_CHARS = 4
-    secret_value = asyncio.run(read_secret(_KEY_VAULT_URI, _SECRET_NAME))
+
+    async def _main() -> str:
+        async with DefaultAzureCredential() as credential:
+            return await read_secret(credential, _KEY_VAULT_URI, _SECRET_NAME)
+
+    secret_value = asyncio.run(_main())
     print(
         f"{_SECRET_NAME} = {secret_value[:_VISIBLE_CHARS]}…"
         f"{secret_value[-_VISIBLE_CHARS:]} ({len(secret_value)} characters)"

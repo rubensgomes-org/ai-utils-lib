@@ -21,6 +21,7 @@ class Azure(BaseModel):
     app_config_prefix: str
     app_config_separator: str = "/"
     secret_prefix: str
+    secret_separator: str = "--"
 
 
 class Foundry(BaseModel):
@@ -53,8 +54,8 @@ class Model(BaseModel):
     )
     timeout_seconds: int = Field(default=DEFAULT_MODEL_TIMEOUT_SECONDS, gt=0)
     temperature: float | None = Field(default=None, ge=0, le=2)
-    # Set from the environment variable named by `api_key_env`; None when
-    # either is unset or empty.
+    # Set from the environment variable named by `api_key_env`, or from Key
+    # Vault by the Azure loader; None when unresolved.
     api_key: str | None = Field(default=None, exclude=True, repr=False)
 
     @model_validator(mode="after")

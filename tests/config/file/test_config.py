@@ -54,7 +54,8 @@ def valid_config() -> dict[str, Any]:
     return {
         "azure": {
             "app_config_prefix": "test-prefix/",
-            "secret_prefix": "test-prefix--",
+            "secret_prefix": "test-prefix",
+            "secret_separator": "--",
         },
         "foundry": {"project_endpoint": "https://example.com/foundry"},
         "mcp": {"calc": {"url": "https://example.com/mcp", "token_dir": "~"}},
@@ -100,7 +101,7 @@ def test_load_config_reads_bundled_config() -> None:
 
     assert isinstance(config, AppConfig)
     assert config.model.name == "dummy-model-name"
-    assert config.mcp["calculator"].is_oauth is True
+    assert config.mcp["calculator"].is_oauth is False
     assert config.logging["version"] == 1
 
 

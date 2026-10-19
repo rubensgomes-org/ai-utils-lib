@@ -24,10 +24,8 @@ class AzureMocks:
 
 @pytest.fixture
 def azure_mocks(mocker: MockerFixture) -> AzureMocks:
-    """Replace the Azure credential and Key Vault client with mocks."""
+    """Replace the Key Vault client with a mock."""
     credential = mocker.MagicMock()
-    credential.__aenter__.return_value = credential
-    mocker.patch(f"{MODULE}.DefaultAzureCredential", return_value=credential)
 
     client = mocker.MagicMock()
     client.__aenter__.return_value = client
@@ -45,7 +43,10 @@ async def test_read_secret_returns_secret_value(
 ) -> None:
     _return_secret(azure_mocks.client, SECRET_VALUE)
 
-    assert await read_secret(VAULT_URL, SECRET_NAME) == SECRET_VALUE
+    assert (
+        await read_secret(azure_mocks.credential, VAULT_URL, SECRET_NAME)
+        == SECRET_VALUE
+    )
 
 
 async def test_read_secret_requests_secret_from_vault(
@@ -53,7 +54,7 @@ async def test_read_secret_requests_secret_from_vault(
 ) -> None:
     _return_secret(azure_mocks.client, SECRET_VALUE)
 
-    await read_secret(VAULT_URL, SECRET_NAME)
+    await read_secret(azure_mocks.credential, VAULT_URL, SECRET_NAME)
 
     azure_mocks.client_class.assert_called_once_with(
         vault_url=VAULT_URL, credential=azure_mocks.credential
@@ -68,21 +69,21 @@ async def test_read_secret_rejects_empty_secret(
     _return_secret(azure_mocks.client, value)
 
     with pytest.raises(ValueError, match=f"{SECRET_NAME} .* is empty"):
-        await read_secret(VAULT_URL, SECRET_NAME)
+        await read_secret(azure_mocks.credential, VAULT_URL, SECRET_NAME)
 
 
-async def test_read_secret_closes_client_and_credential(
+async def test_read_secret_closes_client(
     azure_mocks: AzureMocks,
 ) -> None:
     _return_secret(azure_mocks.client, SECRET_VALUE)
 
-    await read_secret(VAULT_URL, SECRET_NAME)
+    await read_secret(azure_mocks.credential, VAULT_URL, SECRET_NAME)
 
     azure_mocks.client.__aexit__.assert_awaited_once()
-    azure_mocks.credential.__aexit__.assert_awaited_once()
+    azure_mocks.credential.close.assert_not_called()
 
 
-async def test_read_secret_closes_credential_when_secret_missing(
+async def test_read_secret_closes_client_when_secret_missing(
     azure_mocks: AzureMocks,
 ) -> None:
     azure_mocks.client.get_secret.side_effect = ResourceNotFoundError(
@@ -90,7 +91,7 @@ async def test_read_secret_closes_credential_when_secret_missing(
     )
 
     with pytest.raises(ResourceNotFoundError, match="SecretNotFound"):
-        await read_secret(VAULT_URL, SECRET_NAME)
+        await read_secret(azure_mocks.credential, VAULT_URL, SECRET_NAME)
 
     azure_mocks.client.__aexit__.assert_awaited_once()
-    azure_mocks.credential.__aexit__.assert_awaited_once()
+    azure_mocks.credential.close.assert_not_called()

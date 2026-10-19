@@ -5,6 +5,7 @@ import logging
 
 from azure.appconfiguration import ConfigurationSetting
 from azure.appconfiguration.aio import AzureAppConfigurationClient
+from azure.core.credentials_async import AsyncTokenCredential
 from azure.identity.aio import DefaultAzureCredential
 
 __all__ = ["list_settings"]
@@ -30,17 +31,18 @@ logger = logging.getLogger(__name__)
 
 
 async def list_settings(
-    appcs_endpoint: str, key_filter: str, label_filter: str
+    credential: AsyncTokenCredential,
+    appcs_endpoint: str,
+    key_filter: str,
+    label_filter: str,
 ) -> list[ConfigurationSetting]:
-    """Return the store's settings matching the key and label filters."""
-    # DefaultAzureCredential tries, in order:
-    #   1. Environment variables (e.g., AZURE_CLIENT_ID, AZURE_TENANT_ID)
-    #   2. Managed identity (e.g., the UAMI of an Azure Container App)
-    #   3. Your Azure CLI login
-    async with (
-        DefaultAzureCredential() as credential,
-        AzureAppConfigurationClient(appcs_endpoint, credential) as client,
-    ):
+    """Return the store's settings matching the key and label filters.
+
+    ``credential`` is owned, and closed, by the caller.
+    """
+    async with AzureAppConfigurationClient(
+        appcs_endpoint, credential
+    ) as client:
         logger.debug(
             "Listing App Configuration settings with key_filter: %s, "
             "label_filter: %s",
@@ -60,8 +62,13 @@ if __name__ == "__main__":
     # TESTING ONLY!!!
     _APP_CONFIG_ENDPOINT = "https://appcs-rgomes-lab.azconfig.io"
     _KEY_FILTER = "ai-utils*"
-    settings = asyncio.run(
-        list_settings(_APP_CONFIG_ENDPOINT, _KEY_FILTER, "lab")
-    )
+
+    async def _main() -> list[ConfigurationSetting]:
+        async with DefaultAzureCredential() as credential:
+            return await list_settings(
+                credential, _APP_CONFIG_ENDPOINT, _KEY_FILTER, "lab"
+            )
+
+    settings = asyncio.run(_main())
     for setting in settings:
         print(f"{setting.key} = {setting.value}")

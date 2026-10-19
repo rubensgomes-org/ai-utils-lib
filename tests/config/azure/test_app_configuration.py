@@ -25,10 +25,8 @@ class AzureMocks:
 
 @pytest.fixture
 def azure_mocks(mocker: MockerFixture) -> AzureMocks:
-    """Replace the Azure credential and client with mocks."""
+    """Replace the App Configuration client with a mock."""
     credential = mocker.MagicMock()
-    credential.__aenter__.return_value = credential
-    mocker.patch(f"{MODULE}.DefaultAzureCredential", return_value=credential)
 
     client = mocker.MagicMock()
     client.__aenter__.return_value = client
@@ -55,7 +53,9 @@ async def test_list_settings_returns_all_settings(
     ]
     _return_settings(azure_mocks.client, settings)
 
-    result = await list_settings(ENDPOINT, KEY_FILTER, LABEL_FILTER)
+    result = await list_settings(
+        azure_mocks.credential, ENDPOINT, KEY_FILTER, LABEL_FILTER
+    )
 
     assert result == settings
 
@@ -65,7 +65,12 @@ async def test_list_settings_returns_empty_list_when_none_match(
 ) -> None:
     _return_settings(azure_mocks.client, [])
 
-    assert await list_settings(ENDPOINT, KEY_FILTER, LABEL_FILTER) == []
+    assert (
+        await list_settings(
+            azure_mocks.credential, ENDPOINT, KEY_FILTER, LABEL_FILTER
+        )
+        == []
+    )
 
 
 async def test_list_settings_queries_store_with_filters(
@@ -73,7 +78,9 @@ async def test_list_settings_queries_store_with_filters(
 ) -> None:
     _return_settings(azure_mocks.client, [])
 
-    await list_settings(ENDPOINT, KEY_FILTER, LABEL_FILTER)
+    await list_settings(
+        azure_mocks.credential, ENDPOINT, KEY_FILTER, LABEL_FILTER
+    )
 
     azure_mocks.client_class.assert_called_once_with(
         ENDPOINT, azure_mocks.credential
@@ -83,18 +90,20 @@ async def test_list_settings_queries_store_with_filters(
     )
 
 
-async def test_list_settings_closes_client_and_credential(
+async def test_list_settings_closes_client(
     azure_mocks: AzureMocks,
 ) -> None:
     _return_settings(azure_mocks.client, [])
 
-    await list_settings(ENDPOINT, KEY_FILTER, LABEL_FILTER)
+    await list_settings(
+        azure_mocks.credential, ENDPOINT, KEY_FILTER, LABEL_FILTER
+    )
 
     azure_mocks.client.__aexit__.assert_awaited_once()
-    azure_mocks.credential.__aexit__.assert_awaited_once()
+    azure_mocks.credential.close.assert_not_called()
 
 
-async def test_list_settings_closes_credential_when_listing_fails(
+async def test_list_settings_closes_client_when_listing_fails(
     azure_mocks: AzureMocks,
 ) -> None:
     azure_mocks.client.list_configuration_settings.side_effect = (
@@ -102,7 +111,9 @@ async def test_list_settings_closes_credential_when_listing_fails(
     )
 
     with pytest.raises(HttpResponseError, match="Forbidden"):
-        await list_settings(ENDPOINT, KEY_FILTER, LABEL_FILTER)
+        await list_settings(
+            azure_mocks.credential, ENDPOINT, KEY_FILTER, LABEL_FILTER
+        )
 
     azure_mocks.client.__aexit__.assert_awaited_once()
-    azure_mocks.credential.__aexit__.assert_awaited_once()
+    azure_mocks.credential.close.assert_not_called()

@@ -3,14 +3,18 @@
 import asyncio
 import functools
 import logging
+import os
 from importlib.resources.abc import Traversable
 from typing import Any
 
 from azure.appconfiguration import ConfigurationSetting
+from azure.core.credentials_async import AsyncTokenCredential
+from azure.identity.aio import DefaultAzureCredential
 
 from ai_utils_lib.config.azure.app_configuration import list_settings
+from ai_utils_lib.config.azure.key_vault import read_secret
 from ai_utils_lib.config.file.config import read_yaml, resolve_config_path
-from ai_utils_lib.config.models import AppConfig
+from ai_utils_lib.config.models import AppConfig, Azure
 
 __all__ = ["load_config"]
 
@@ -25,9 +29,13 @@ def load_config(
 
     Settings under ``azure.app_config_prefix`` and labeled ``label_filter``
     are read from the store at ``appcs_endpoint`` and override the
-    matching YAML values.
+    matching YAML values. ``model.api_key`` is read from Key Vault unless
+    the variable named by ``model.api_key_env`` holds it.
 
     Must not be called from a running event loop.
+
+    Raises:
+        KeyError: Key Vault is needed but ``KEY_VAULT_URI`` is not set.
     """
     logger.debug(
         "Loading Azure App Configuration with package: %s, "
@@ -38,20 +46,84 @@ def load_config(
     )
     config_yaml_file: Traversable = resolve_config_path(package)
     config_dict: dict[str, Any] = read_yaml(config_yaml_file)
-    prefix: str = config_dict["azure"]["app_config_prefix"]
-    separator: str = config_dict["azure"]["app_config_separator"]
-    logger.debug("prefix: %s, separator: %s", prefix, separator)
-    settings_dict: dict[str, Any] = asyncio.run(
-        _convert_to_dict(appcs_endpoint, separator, prefix, label_filter)
+    return asyncio.run(_load_config(config_dict, appcs_endpoint, label_filter))
+
+
+async def _load_config(
+    config_dict: dict[str, Any], appcs_endpoint: str, label_filter: str
+) -> AppConfig:
+    """Return ``config_dict`` overlaid with settings, with the API key."""
+    # DefaultAzureCredential tries, in order:
+    #   1. Environment variables (e.g., AZURE_CLIENT_ID, AZURE_TENANT_ID)
+    #   2. Managed identity (e.g., the UAMI of an Azure Container App)
+    #   3. Your Azure CLI login
+    async with DefaultAzureCredential() as credential:
+        return await _load_config_with_credential(
+            credential, config_dict, appcs_endpoint, label_filter
+        )
+
+
+async def _load_config_with_credential(
+    credential: AsyncTokenCredential,
+    config_dict: dict[str, Any],
+    appcs_endpoint: str,
+    label_filter: str,
+) -> AppConfig:
+    """Return ``config_dict`` overlaid with settings, with the API key."""
+    app_config_prefix: str = config_dict["azure"]["app_config_prefix"]
+    app_config_separator: str = config_dict["azure"]["app_config_separator"]
+    logger.debug(
+        "prefix: %s, separator: %s", app_config_prefix, app_config_separator
     )
-    combined_config_dict: dict[str, Any] = _deep_merge(
-        config_dict, settings_dict
+    settings_dict: dict[str, Any] = await _convert_to_dict(
+        credential,
+        appcs_endpoint,
+        app_config_separator,
+        app_config_prefix,
+        label_filter,
     )
-    return AppConfig.model_validate(combined_config_dict)
+    config = AppConfig.model_validate(_deep_merge(config_dict, settings_dict))
+    return await _with_api_key(credential, config)
+
+
+async def _with_api_key(
+    credential: AsyncTokenCredential, config: AppConfig
+) -> AppConfig:
+    """Return ``config`` with ``model.api_key`` set, read from Key Vault
+    when the variable named by ``model.api_key_env`` did not provide it.
+    """
+    api_key_env: str | None = config.model.api_key_env
+    if not api_key_env or config.model.api_key:
+        return config
+    secret_name: str = _secret_name(config.azure, api_key_env)
+    # KEY_VAULT_URI is an environment variable set in every ACA by
+    # Rubens' Terraform azure-iac project.
+    vault_url: str | None = os.environ.get("KEY_VAULT_URI")
+    if not vault_url:
+        raise KeyError(
+            f"KEY_VAULT_URI must be set to read Key Vault secret "
+            f"{secret_name}, as {api_key_env} is not set"
+        )
+    api_key: str = await read_secret(credential, vault_url, secret_name)
+    model = config.model.model_copy(update={"api_key": api_key})
+    return config.model_copy(update={"model": model})
+
+
+def _secret_name(azure: Azure, api_key_env: str) -> str:
+    """Return the Key Vault secret name for ``api_key_env``.
+
+    Underscores become dashes, as Key Vault secret names disallow them.
+    """
+    secret_key: str = api_key_env.replace("_", "-")
+    return f"{azure.secret_prefix}{azure.secret_separator}{secret_key}"
 
 
 async def _convert_to_dict(
-    appcs_endpoint: str, separator: str, prefix: str, label_filter: str
+    credential: AsyncTokenCredential,
+    appcs_endpoint: str,
+    separator: str,
+    prefix: str,
+    label_filter: str,
 ) -> dict[str, Any]:
     """Return the settings under ``prefix`` as a nested dictionary.
 
@@ -60,7 +132,7 @@ async def _convert_to_dict(
     """
     key_filter: str = f"{prefix}*"
     settings: list[ConfigurationSetting] = await list_settings(
-        appcs_endpoint, key_filter, label_filter
+        credential, appcs_endpoint, key_filter, label_filter
     )
     logger.debug(
         "Read %d App Configuration settings with key_filter: %s",

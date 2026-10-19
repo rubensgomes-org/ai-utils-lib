@@ -5,12 +5,18 @@
 # Microsoft Azure Configuration
 # ====================================================================
 azure:
+    # app config key sample: 
+    #   "ca-mathagent/azure/app_config_prefix"
     # App Configuration prefix
-    app_config_prefix: "ai-utils"
+    app_config_prefix: "ai-utils/"
     # app configuration prefix separator
     app_config_separator: "/"
-    # Key Vault prefix
-    secret_prefix: "dummy-kv-prefix--"
+    # secret key sample: 
+    #   "ca-mathagent--FOUNDRY-API-KEY"
+    # Key Vault secret prefix
+    secret_prefix: "dummy-kv-prefix"
+    # Key Vault secret separator
+    secret_separator: "--"
 
 # ====================================================================
 # Microsoft Foundry Configuration
@@ -23,10 +29,8 @@ foundry:
 # ====================================================================
 mcp:
     calculator:
-        #url: "http://127.0.0.1:8080/mcp"
-        url: "https://dummyurl.change.it/mcp"
-        #is_oauth: false
-        is_oauth: true
+        url: "http://127.0.0.1:8080/mcp"
+        is_oauth: false
         # location to store OAuth token in the local machine
         token_dir: "~/.oauth_tokens"
         # local port temporarily used by the OAuth callback
@@ -61,7 +65,7 @@ model:
 # Web App Configuration (e.g., used by FastAPI web app server)
 # ====================================================================
 web:
-    host: "0.0.0.0"
+    host: "127.0.0.1"
     # ensure below port does not conflict with other services.
     port: 9090
 
