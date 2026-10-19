@@ -2,8 +2,8 @@
 
 import os
 
-from ai_utils_lib.config.azure.config import load_config as load_azure_config
-from ai_utils_lib.config.file.config import load_config as load_file_config
+from ai_utils_lib.config.azure.config import load_config as _load_azure_config
+from ai_utils_lib.config.file.config import load_config as _load_file_config
 from ai_utils_lib.config.models import AppConfig
 
 __all__ = ["load_config"]
@@ -28,10 +28,10 @@ def load_config(package: str) -> AppConfig:
         # APP_ENV is an environment variable set in every ACA by
         # Rubens' Terraform azure-iac project.
         label: str = os.environ["APP_ENV"]  # KeyError if not defined
-        return load_azure_config(package, aca_endpoint, label)
+        return _load_azure_config(package, aca_endpoint, label)
 
     # application is running locally
-    return load_file_config(package)
+    return _load_file_config(package)
 
 
 if __name__ == "__main__":

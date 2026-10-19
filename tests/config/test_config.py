@@ -7,9 +7,9 @@ import pytest
 from azure.appconfiguration import ConfigurationSetting
 from pytest_mock import MockerFixture
 
-from ai_utils_lib.config.azure.config import load_config as load_azure_config
+from ai_utils_lib.config.azure.config import load_config as _load_azure_config
 from ai_utils_lib.config.config import load_config
-from ai_utils_lib.config.file.config import load_config as load_file_config
+from ai_utils_lib.config.file.config import load_config as _load_file_config
 
 AZURE_MODULE = "ai_utils_lib.config.azure.config"
 BUNDLED_CONFIG_PACKAGE = "ai_utils_lib.config"
@@ -20,11 +20,11 @@ LABEL = "lab"
 
 @pytest.fixture(autouse=True)
 def clear_config_caches() -> Iterator[None]:
-    load_azure_config.cache_clear()
-    load_file_config.cache_clear()
+    _load_azure_config.cache_clear()
+    _load_file_config.cache_clear()
     yield
-    load_azure_config.cache_clear()
-    load_file_config.cache_clear()
+    _load_azure_config.cache_clear()
+    _load_file_config.cache_clear()
 
 
 @pytest.fixture

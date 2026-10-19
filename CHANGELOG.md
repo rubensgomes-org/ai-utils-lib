@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `config.config` imports the Azure and file loaders as private
+  `_load_azure_config` and `_load_file_config`.
+
 ### Fixed
 
 ## [0.0.2] - 2026-10-19
