@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+### Fixed
+
+## [0.0.7] - 2026-10-19
+
+### Added
+
+### Changed
+
 <<<<<<< HEAD
 - The `mcp` and `web` config sections are optional; when omitted, `mcp`
   is empty and `web` uses its defaults.
