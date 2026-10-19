@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+### Fixed
+
+## [0.0.2] - 2026-10-19
+
+### Added
+
+### Changed
+
 - The `azure` section requires `app_config_prefix`; `app_config_separator`
   defaults to `/`.
 - `mcp.<name>.token_dir` defaults to `~/.oauth_tokens`.
