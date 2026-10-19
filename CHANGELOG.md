@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `Model.api_key` is read from the environment variable named by
+  `api_key_env`, and is None when either is unset or empty.
+- `Model.api_key_env` accepts an empty string.
+
 ### Fixed
 
 ## [0.0.3] - 2026-10-19

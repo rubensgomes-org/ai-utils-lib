@@ -1,8 +1,9 @@
 """Pydantic models for the config.yaml sections."""
 
-from typing import Any, Literal
+import os
+from typing import Any, Literal, Self
 
-from pydantic import BaseModel, Field, HttpUrl
+from pydantic import BaseModel, Field, HttpUrl, model_validator
 
 from ai_utils_lib.constants import (
     DEFAULT_MAX_CONCURRENT_PROMPTS,
@@ -44,7 +45,7 @@ class Model(BaseModel):
     base_url: HttpUrl
     name: str = Field(min_length=1)
     # `api_key_env` may be None if we are using Azure Entra ID credential
-    api_key_env: str | None = Field(default=None, min_length=1)
+    api_key_env: str | None = None
     instructions: str
     is_stateful: bool = False
     max_concurrent_prompts: int = Field(
@@ -52,9 +53,18 @@ class Model(BaseModel):
     )
     timeout_seconds: int = Field(default=DEFAULT_MODEL_TIMEOUT_SECONDS, gt=0)
     temperature: float | None = Field(default=None, ge=0, le=2)
-    # `api_key` if used is read at initializetion time from either a Key
-    # Vault or the environment variable defined by `api_key_env`.
+    # Set from the environment variable named by `api_key_env`; None when
+    # either is unset or empty.
     api_key: str | None = Field(default=None, exclude=True, repr=False)
+
+    @model_validator(mode="after")
+    def _read_api_key(self) -> Self:
+        """Sets ``api_key`` from the variable named by ``api_key_env``."""
+        if self.api_key_env:
+            self.api_key = os.environ.get(self.api_key_env) or None
+        else:
+            self.api_key = None
+        return self
 
 
 class Web(BaseModel):
