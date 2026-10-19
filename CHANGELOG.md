@@ -11,8 +11,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+<<<<<<< HEAD
 - The `mcp` and `web` config sections are optional; when omitted, `mcp`
   is empty and `web` uses its defaults.
+=======
+### Fixed
+
+## [0.0.6] - 2026-10-19
+
+### Added
+
+### Changed
+
+>>>>>>> 3a89ce9dca675fb3d05f01537fb168cac7e97700
 - **Breaking:** config models are frozen; assigning an attribute raises
   `ValidationError`. Use `model_copy(update=...)` to derive a modified
   copy.
