@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [0.0.5] - 2026-10-19
+
+### Added
+
 - `Azure.secret_separator`, defaulting to `--`.
 
 ### Changed
