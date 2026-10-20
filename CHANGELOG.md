@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [0.0.9] - 2026-10-20
+
+### Added
+
 - `config.azure_load_config.aload_config`, an async `load_config` for callers
   with a running event loop.
 - `config.config.aload_config`, an async `config.config.load_config`.
