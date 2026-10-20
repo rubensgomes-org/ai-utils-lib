@@ -1,4 +1,4 @@
-"""Tests for ai_utils_lib.config.azure.app_configuration."""
+"""Tests for ai_utils_lib.azure.app_configuration."""
 
 from dataclasses import dataclass
 from unittest.mock import MagicMock
@@ -8,9 +8,9 @@ from azure.appconfiguration import ConfigurationSetting
 from azure.core.exceptions import HttpResponseError
 from pytest_mock import MockerFixture
 
-from ai_utils_lib.config.azure.app_configuration import list_settings
+from ai_utils_lib.azure.app_configuration import list_settings
 
-MODULE = "ai_utils_lib.config.azure.app_configuration"
+MODULE = "ai_utils_lib.azure.app_configuration"
 ENDPOINT = "https://appcs-test.azconfig.io"
 KEY_FILTER = "ca-test/*"
 LABEL_FILTER = "dev"
@@ -117,3 +117,15 @@ async def test_list_settings_closes_client_when_listing_fails(
 
     azure_mocks.client.__aexit__.assert_awaited_once()
     azure_mocks.credential.close.assert_not_called()
+
+
+@pytest.mark.parametrize("label_filter", ["*", "la*", "dev,lab", "\0,lab"])
+async def test_list_settings_rejects_multi_label_filter(
+    azure_mocks: AzureMocks, label_filter: str
+) -> None:
+    with pytest.raises(ValueError, match="exactly one label"):
+        await list_settings(
+            azure_mocks.credential, ENDPOINT, KEY_FILTER, label_filter
+        )
+
+    azure_mocks.client_class.assert_not_called()

@@ -1,4 +1,4 @@
-"""Tests for ai_utils_lib.config.azure.key_vault."""
+"""Tests for ai_utils_lib.azure.key_vault."""
 
 from dataclasses import dataclass
 from unittest.mock import MagicMock
@@ -7,9 +7,9 @@ import pytest
 from azure.core.exceptions import ResourceNotFoundError
 from pytest_mock import MockerFixture
 
-from ai_utils_lib.config.azure.key_vault import read_secret
+from ai_utils_lib.azure.key_vault import read_secret
 
-MODULE = "ai_utils_lib.config.azure.key_vault"
+MODULE = "ai_utils_lib.azure.key_vault"
 VAULT_URL = "https://kv-test.vault.azure.net/"
 SECRET_NAME = "test-api-key"
 SECRET_VALUE = "test-secret-value"
@@ -62,7 +62,20 @@ async def test_read_secret_requests_secret_from_vault(
     azure_mocks.client.get_secret.assert_awaited_once_with(SECRET_NAME)
 
 
-@pytest.mark.parametrize("value", ["", None], ids=["empty", "none"])
+async def test_read_secret_strips_surrounding_whitespace(
+    azure_mocks: AzureMocks,
+) -> None:
+    _return_secret(azure_mocks.client, f" {SECRET_VALUE}\n")
+
+    assert (
+        await read_secret(azure_mocks.credential, VAULT_URL, SECRET_NAME)
+        == SECRET_VALUE
+    )
+
+
+@pytest.mark.parametrize(
+    "value", ["", None, " \n"], ids=["empty", "none", "blank"]
+)
 async def test_read_secret_rejects_empty_secret(
     azure_mocks: AzureMocks, value: str | None
 ) -> None:
@@ -95,3 +108,17 @@ async def test_read_secret_closes_client_when_secret_missing(
 
     azure_mocks.client.__aexit__.assert_awaited_once()
     azure_mocks.credential.close.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    "secret_name",
+    ["", "bad_name", "bad.name", "a" * 128],
+    ids=["empty", "underscore", "dot", "too-long"],
+)
+async def test_read_secret_rejects_invalid_secret_name(
+    azure_mocks: AzureMocks, secret_name: str
+) -> None:
+    with pytest.raises(ValueError, match="1-127 alphanumerics or dashes"):
+        await read_secret(azure_mocks.credential, VAULT_URL, secret_name)
+
+    azure_mocks.client_class.assert_not_called()

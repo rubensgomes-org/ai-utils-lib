@@ -1,13 +1,14 @@
-"""Tests for ai_utils_lib.config.azure.entra_id."""
+"""Tests for ai_utils_lib.azure.entra_id."""
 
 import time
 from typing import Any, Self
 
 from azure.core.credentials import AccessToken
 
-from ai_utils_lib.config.azure.entra_id import (
+from ai_utils_lib.azure.entra_id import (
+    AI_FOUNDRY_SCOPE,
     COGNITIVE_SERVICES_SCOPE,
-    token_provider,
+    ai_token_provider,
 )
 
 TOKEN = "test-bearer-token"
@@ -35,23 +36,31 @@ class FakeCredential:
         self.closed = True
 
 
-async def test_token_provider_returns_credential_token() -> None:
-    provider = token_provider(FakeCredential())
+async def test_ai_token_provider_returns_credential_token() -> None:
+    provider = ai_token_provider(FakeCredential())
 
     assert await provider() == TOKEN
 
 
-async def test_token_provider_requests_cognitive_services_scope() -> None:
+async def test_ai_token_provider_requests_cognitive_services_scope() -> None:
     credential = FakeCredential()
 
-    await token_provider(credential)()
+    await ai_token_provider(credential)()
 
     assert credential.requested_scopes == [(COGNITIVE_SERVICES_SCOPE,)]
 
 
-async def test_token_provider_reuses_unexpired_token() -> None:
+async def test_ai_token_provider_requests_given_scope() -> None:
     credential = FakeCredential()
-    provider = token_provider(credential)
+
+    await ai_token_provider(credential, AI_FOUNDRY_SCOPE)()
+
+    assert credential.requested_scopes == [(AI_FOUNDRY_SCOPE,)]
+
+
+async def test_ai_token_provider_reuses_unexpired_token() -> None:
+    credential = FakeCredential()
+    provider = ai_token_provider(credential)
 
     await provider()
     await provider()
@@ -59,9 +68,9 @@ async def test_token_provider_reuses_unexpired_token() -> None:
     assert len(credential.requested_scopes) == 1
 
 
-async def test_token_provider_leaves_credential_open() -> None:
+async def test_ai_token_provider_leaves_credential_open() -> None:
     credential = FakeCredential()
 
-    await token_provider(credential)()
+    await ai_token_provider(credential)()
 
     assert credential.closed is False

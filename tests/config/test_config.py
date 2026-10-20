@@ -7,11 +7,11 @@ import pytest
 from azure.appconfiguration import ConfigurationSetting
 from pytest_mock import MockerFixture
 
-from ai_utils_lib.config.azure.config import load_config as _load_azure_config
+from ai_utils_lib.azure.config import load_config as _load_azure_config
 from ai_utils_lib.config.config import load_config
 from ai_utils_lib.config.file.config import load_config as _load_file_config
 
-AZURE_MODULE = "ai_utils_lib.config.azure.config"
+AZURE_MODULE = "ai_utils_lib.azure.config"
 BUNDLED_CONFIG_PACKAGE = "ai_utils_lib.config"
 ENDPOINT = "https://appcs-test.azconfig.io"
 PREFIX = "ai-utils/"

@@ -9,9 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `ai_token_provider` takes an optional `scope`; `AI_FOUNDRY_SCOPE`
+  targets Azure AI Foundry project and Agent APIs.
+- `scripts/tests/` scripts exercise the Azure modules against live
+  resources, replacing their `__main__` blocks.
+
 ### Changed
 
+- **Breaking:** the Azure modules moved from `ai_utils_lib.config.azure`
+  to `ai_utils_lib.azure`.
+- **Breaking:** renamed `token_provider` to `ai_token_provider`.
+- **Breaking:** `list_settings` raises `ValueError` for a `label_filter`
+  containing `*` or `,`.
+- `read_secret` strips surrounding whitespace from the secret value, and
+  raises `ValueError` for an invalid secret name before calling Key Vault.
+
 ### Fixed
+
+- `read_secret` rejects whitespace-only secrets.
 
 ## [0.0.7] - 2026-10-19
 
@@ -19,10 +34,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-<<<<<<< HEAD
 - The `mcp` and `web` config sections are optional; when omitted, `mcp`
   is empty and `web` uses its defaults.
-=======
+
 ### Fixed
 
 ## [0.0.6] - 2026-10-19
@@ -31,7 +45,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
->>>>>>> 3a89ce9dca675fb3d05f01537fb168cac7e97700
 - **Breaking:** config models are frozen; assigning an attribute raises
   `ValidationError`. Use `model_copy(update=...)` to derive a modified
   copy.

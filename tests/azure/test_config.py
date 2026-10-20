@@ -1,4 +1,4 @@
-"""Tests for ai_utils_lib.config.azure.config."""
+"""Tests for ai_utils_lib.azure.config."""
 
 from collections.abc import Iterator
 from unittest.mock import AsyncMock, MagicMock
@@ -8,10 +8,10 @@ from azure.appconfiguration import ConfigurationSetting
 from pydantic import ValidationError
 from pytest_mock import MockerFixture
 
-from ai_utils_lib.config.azure.config import load_config
+from ai_utils_lib.azure.config import load_config
 from ai_utils_lib.config.file.config import read_yaml, resolve_config_path
 
-MODULE = "ai_utils_lib.config.azure.config"
+MODULE = "ai_utils_lib.azure.config"
 BUNDLED_CONFIG_PACKAGE = "ai_utils_lib.config"
 ENDPOINT = "https://appcs-test.azconfig.io"
 PREFIX = "ai-utils/"

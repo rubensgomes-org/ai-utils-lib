@@ -179,3 +179,6 @@ coverage.xml
 
 # drawio backup files
 *.bkp
+
+# Foundry files
+.foundry/

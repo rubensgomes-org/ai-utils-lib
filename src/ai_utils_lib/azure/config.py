@@ -11,8 +11,8 @@ from azure.appconfiguration import ConfigurationSetting
 from azure.core.credentials_async import AsyncTokenCredential
 from azure.identity.aio import DefaultAzureCredential
 
-from ai_utils_lib.config.azure.app_configuration import list_settings
-from ai_utils_lib.config.azure.key_vault import read_secret
+from ai_utils_lib.azure.app_configuration import list_settings
+from ai_utils_lib.azure.key_vault import read_secret
 from ai_utils_lib.config.file.config import read_yaml, resolve_config_path
 from ai_utils_lib.config.models import AppConfig, Azure
 
@@ -36,6 +36,11 @@ def load_config(
 
     Raises:
         KeyError: Key Vault is needed but ``KEY_VAULT_URI`` is not set.
+        ValueError: ``label_filter`` contains ``*`` or ``,``, or the Key
+            Vault secret name is invalid, or its value is empty or blank.
+        HttpResponseError: An App Configuration or Key Vault request
+            failed, including ``ResourceNotFoundError`` and
+            ``ClientAuthenticationError``.
     """
     logger.debug(
         "Loading Azure App Configuration with package: %s, "
@@ -181,12 +186,3 @@ def _deep_merge(
         else:
             merged[key] = value
     return merged
-
-
-if __name__ == "__main__":
-    # TESTING ONLY!!!
-    _APP_CONFIG_ENDPOINT = "https://appcs-rgomes-lab.azconfig.io"
-    config: AppConfig = load_config(
-        "ai_utils_lib.config", _APP_CONFIG_ENDPOINT, "lab"
-    )
-    print(f"AppConfig = {config}")

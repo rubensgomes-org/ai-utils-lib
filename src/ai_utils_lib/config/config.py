@@ -2,7 +2,7 @@
 
 import os
 
-from ai_utils_lib.config.azure.config import load_config as _load_azure_config
+from ai_utils_lib.azure.config import load_config as _load_azure_config
 from ai_utils_lib.config.file.config import load_config as _load_file_config
 from ai_utils_lib.config.models import AppConfig
 
