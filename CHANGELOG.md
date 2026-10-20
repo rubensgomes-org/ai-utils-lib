@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [0.0.8] - 2026-10-20
+
+### Added
+
 - `ai_token_provider` takes an optional `scope`; `AI_FOUNDRY_SCOPE`
   targets Azure AI Foundry project and Agent APIs.
 - `scripts/tests/` scripts exercise the Azure modules against live
