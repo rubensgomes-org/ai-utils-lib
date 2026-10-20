@@ -8,13 +8,13 @@ azure:
     # App Configuration prefix
     #   app config key example: 
     #   "ca-mathagent/azure/app_config_prefix"
-    app_config_prefix: "ca-mathagent/"
+    app_config_prefix: "ai-utils/"
     # app configuration prefix separator
     app_config_separator: "/"
     # Key Vault secret prefix
     #   secret key example: 
     #   "ca-mathagent--FOUNDRY-API-KEY"
-    secret_prefix: "ca-mathagent"
+    secret_prefix: "dummy-kv-prefix"
     # Key Vault secret separator
     secret_separator: "--"
 
@@ -45,10 +45,10 @@ model:
     #   "responses" -> POST /v1/responses         (newer and preferred)
     #   "chat"      -> POST /v1/chat/completions  (legacy)
     api_style: "responses"
-    base_url: "https://integrate.api.nvidia.com/v1"
-    name: "nvidia/nemotron-3-ultra-550b-a55b"
+    base_url: "https://dummyurl.change.it/v1"
+    name: "dummy-model-name"
     # environment variable holding the API key.
-    api_key_env: "NVIDIA_API_KEY"
+    api_key_env: "DUMMY_API_KEY"
     # system instructions being provided to the model.
     instructions: >-
         Dummy system instructions for the model.  Change it to your own instructions.
