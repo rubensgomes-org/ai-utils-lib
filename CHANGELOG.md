@@ -9,9 +9,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `config.azure_load_config.aload_config`, an async `load_config` for callers
+  with a running event loop.
+- `config.config.aload_config`, an async `config.config.load_config`.
+- `ai_utils_lib.config` exports `load_config` and `aload_config`.
+- `scripts/tests/test_config.sh` exercises `load_config` and
+  `aload_config` of `ai_utils_lib.config`.
+
 ### Changed
 
+- **Breaking:** moved `ai_utils_lib.azure.config` to
+  `ai_utils_lib.config.azure_load_config`.
+- **Breaking:** moved `ai_utils_lib.config.file.config` to
+  `ai_utils_lib.config.file_load_config`.
+- **Breaking:** `config.azure_load_config.load_config` raises
+  `RuntimeError`, not `KeyError`, when `KEY_VAULT_URI` is needed but not set.
+- **Breaking:** `config.config.load_config` raises `RuntimeError`, not
+  `KeyError`, when `APP_CONFIG_ENDPOINT` is set but `APP_ENV` is not set
+  or is empty.
+- **Breaking:** `config.azure_load_config.load_config` raises
+  `ValueError` for an App Configuration setting with no value, instead of
+  overriding the YAML value with `None`.
+- `config.azure_load_config.load_config` ignores App Configuration
+  `azure.app_config_prefix` and `azure.app_config_separator`, logging a
+  warning when they differ from `config.yaml`.
+- Renamed `scripts/tests/test_azure_config.sh` to
+  `test_azure_load_config.sh`; it takes a `key_vault_uri` and reports the
+  API key source.
+- `scripts/tests/` scripts print their inputs and steps, show at most the
+  last 4 characters of secrets, and `test_entra_id.sh` takes a `scope`.
+
+### Removed
+
+- The `__main__` block of `config.config`.
+
 ### Fixed
+
+- `config.azure_load_config.load_config` escapes `*`, `,` and `\` in
+  `app_config_prefix` when querying App Configuration.
 
 ## [0.0.8] - 2026-10-20
 

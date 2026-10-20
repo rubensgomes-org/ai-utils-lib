@@ -7,11 +7,15 @@ import pytest
 from azure.appconfiguration import ConfigurationSetting
 from pytest_mock import MockerFixture
 
-from ai_utils_lib.azure.config import load_config as _load_azure_config
-from ai_utils_lib.config.config import load_config
-from ai_utils_lib.config.file.config import load_config as _load_file_config
+from ai_utils_lib.config.azure_load_config import (
+    load_config as _load_azure_config,
+)
+from ai_utils_lib.config import aload_config, load_config
+from ai_utils_lib.config.file_load_config import (
+    load_config as _load_file_config,
+)
 
-AZURE_MODULE = "ai_utils_lib.azure.config"
+AZURE_MODULE = "ai_utils_lib.config.azure_load_config"
 BUNDLED_CONFIG_PACKAGE = "ai_utils_lib.config"
 ENDPOINT = "https://appcs-test.azconfig.io"
 PREFIX = "ai-utils/"
@@ -60,8 +64,7 @@ def local_env(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("APP_CONFIG_ENDPOINT", raising=False)
 
 
-@pytest.mark.usefixtures("azure_env")
-@pytest.mark.usefixtures("read_secret_mock")
+@pytest.mark.usefixtures("azure_env", "read_secret_mock")
 def test_load_config_reads_app_configuration_in_azure(
     list_settings_mock: AsyncMock, credential_mock: MagicMock
 ) -> None:
@@ -99,12 +102,44 @@ def test_load_config_treats_empty_endpoint_as_local(
 
 
 @pytest.mark.usefixtures("azure_env")
+@pytest.mark.parametrize("app_env", [None, ""])
 def test_load_config_requires_app_env_in_azure(
-    monkeypatch: pytest.MonkeyPatch, list_settings_mock: AsyncMock
+    monkeypatch: pytest.MonkeyPatch,
+    list_settings_mock: AsyncMock,
+    app_env: str | None,
 ) -> None:
-    monkeypatch.delenv("APP_ENV")
+    if app_env is None:
+        monkeypatch.delenv("APP_ENV")
+    else:
+        monkeypatch.setenv("APP_ENV", app_env)
 
-    with pytest.raises(KeyError, match="APP_ENV"):
+    with pytest.raises(RuntimeError, match="APP_ENV must be set"):
         load_config(BUNDLED_CONFIG_PACKAGE)
 
     list_settings_mock.assert_not_called()
+
+
+@pytest.mark.usefixtures("azure_env", "read_secret_mock")
+async def test_aload_config_reads_app_configuration_in_azure(
+    list_settings_mock: AsyncMock, credential_mock: MagicMock
+) -> None:
+    list_settings_mock.return_value = [
+        ConfigurationSetting(key=f"{PREFIX}model/name", value="azure-model")
+    ]
+
+    config = await aload_config(BUNDLED_CONFIG_PACKAGE)
+
+    list_settings_mock.assert_awaited_once_with(
+        credential_mock, ENDPOINT, f"{PREFIX}*", LABEL
+    )
+    assert config.model.name == "azure-model"
+
+
+@pytest.mark.usefixtures("local_env")
+async def test_aload_config_reads_yaml_only_locally(
+    list_settings_mock: AsyncMock,
+) -> None:
+    config = await aload_config(BUNDLED_CONFIG_PACKAGE)
+
+    list_settings_mock.assert_not_called()
+    assert config.model.name == "dummy-model-name"
