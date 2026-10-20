@@ -67,9 +67,10 @@ async def list_settings(
 def _reject_multi_label(label_filter: str) -> None:
     """Raise ``ValueError`` if ``label_filter`` can match many labels."""
     if any(char in label_filter for char in MULTI_LABEL_CHARS):
+        forbidden_chars: str = " or ".join(MULTI_LABEL_CHARS)
         error_msg: str = (
             f"App Configuration label_filter {label_filter!r} must name "
-            f"exactly one label, without {' or '.join(MULTI_LABEL_CHARS)}."
+            f"exactly one label, without {forbidden_chars}."
         )
         logger.error(error_msg)
         raise ValueError(error_msg)
