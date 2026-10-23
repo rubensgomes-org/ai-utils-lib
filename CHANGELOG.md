@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+### Fixed
+
+## [0.0.11] - 2026-10-23
+
+### Added
+
+### Changed
+
 - `README.md` lists the Entra ID and Foundry utilities, notes active
   development, and shows the `openai` 3.37+ requirement.
 
