@@ -57,7 +57,7 @@ def read_secret_mock(
 
 
 @pytest.fixture
-def app_config(read_secret_mock: AsyncMock) -> AppConfig:
+def app_config() -> AppConfig:
     return load_file_config(BUNDLED_CONFIG)
 
 

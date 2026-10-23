@@ -114,8 +114,7 @@ python.version = "3.14"
 # ---------- >>> poethepoet tasks <<< -----------------------------------------
 
 # To run a poe task:
-# `poetry run poe <task-name>` OR
-# `poe <task-name>` (e.g., poe clean)
+# `poetry run poe <task-name>`
 
 [tool.poe.tasks]
 # Poe the Poetry "poethepoet" task runner needs to be installed.
