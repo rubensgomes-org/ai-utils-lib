@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [0.0.10] - 2026-10-23
+
+### Added
+
 - `foundry.project_clients.get_ai_project_clients`, an async context
   manager yielding a Foundry `AIProjectClient` and its `AsyncOpenAI`
   client.
