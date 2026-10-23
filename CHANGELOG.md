@@ -9,7 +9,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `azure-core` dependency.
+
 ### Changed
+
+- **Breaking:** the sync `config.load_config` and
+  `config.azure_load_config.load_config` are removed; await
+  `config.aload_config` instead.
+- **Breaking:** `config.azure_load_config` moves to
+  `azure.azure_load_config`, and its `aload_config` takes the YAML-loaded
+  `AppConfig` instead of a path.
+- **Breaking:** `config.models` moves to `config_models`, and
+  `config.file_load_config` to `file.file_load_config`, whose `read_yaml`
+  is private.
+- **Breaking:** config models reject unknown keys, in `config.yaml` and in
+  App Configuration.
+- `azure.app_config_prefix` and `azure.app_config_separator` set in App
+  Configuration are no longer ignored.
+- The bundled `config.yaml` sets `web.host` to `0.0.0.0` and `web.port`
+  to `8080`. `config/azure_appcs_config_<env>.yaml` no longer set `azure`,
+  `web` or the `mcp` OAuth settings.
+- `scripts/tests/test_config.sh` and `test_azure_load_config.sh` load with
+  `aload_config`.
 
 ### Fixed
 

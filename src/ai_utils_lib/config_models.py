@@ -16,9 +16,12 @@ __all__ = ["Azure", "Foundry", "MCP", "Model", "Web", "AppConfig"]
 
 
 class _FrozenModel(BaseModel):
-    """Immutable base, as loaded configs are cached and shared."""
+    """Immutable base, as loaded configs are cached and shared.
 
-    model_config = ConfigDict(frozen=True)
+    Unknown keys are rejected so misspelled settings are not ignored.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
 
 class Azure(_FrozenModel):

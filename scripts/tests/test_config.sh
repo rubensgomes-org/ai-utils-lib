@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Loads config.yaml with load_config and aload_config of ai_utils_lib.config.
+# Loads config.yaml with aload_config of ai_utils_lib.config.
 # Usage: test_config.sh [config] [endpoint] [app_env] [key_vault_uri]
 # An empty endpoint ("") loads config.yaml only.
 set -euo pipefail
@@ -24,10 +24,10 @@ import os
 import sys
 from pathlib import Path
 
-from ai_utils_lib.config import aload_config, load_config
+from ai_utils_lib.config import aload_config
 
-print("Loading config with load_config...")
-config = load_config(Path(sys.argv[1]))
+print("Loading config with aload_config...")
+config = asyncio.run(aload_config(Path(sys.argv[1])))
 api_key_env = config.model.api_key_env
 if config.model.api_key is None:
     api_key_source = "not resolved"
@@ -37,7 +37,4 @@ else:
     api_key_source = "Key Vault"
 print(f"AppConfig = {config}")
 print(f"API key source: {api_key_source}")
-print("Loading config with aload_config...")
-async_config = asyncio.run(aload_config(Path(sys.argv[1])))
-print(f"aload_config matches: {async_config == config}")
 EOF

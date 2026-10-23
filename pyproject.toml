@@ -29,6 +29,7 @@ dependencies = [
     # aiohttp: transport for the Azure  async clients
     "aiohttp (>=3.14.5,<4)",
     "azure-appconfiguration (>=1.10,<2)",
+    "azure-core (>=1.41,<2)",
     "azure-identity (>=1.26,<2)",
     "azure-keyvault-secrets (>=4.11.3,<5)",
     # ------ >>> Microsoft Foundry dependencies <<< -------

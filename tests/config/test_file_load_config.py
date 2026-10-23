@@ -1,4 +1,4 @@
-"""Tests for ai_utils_lib.config.file_load_config."""
+"""Tests for ai_utils_lib.file.file_load_config."""
 
 import copy
 import logging
@@ -11,11 +11,11 @@ import yaml
 from pydantic import ValidationError
 
 import ai_utils_lib
-from ai_utils_lib.config.file_load_config import configure_logging, load_config
-from ai_utils_lib.config.models import AppConfig, Web
+from ai_utils_lib.config_models import AppConfig, Web
+from ai_utils_lib.file.file_load_config import configure_logging, load_config
 
 BUNDLED_CONFIG = Path(ai_utils_lib.__file__).with_name("config.yaml")
-PROBE_LOGGER_NAME = "tests.config.file_load_config.probe"
+PROBE_LOGGER_NAME = "tests.file.file_load_config.probe"
 
 ConfigFactory = Callable[[str], Path]
 

@@ -7,9 +7,9 @@ from typing import Any
 
 import yaml
 
-from ai_utils_lib.config.models import AppConfig
+from ai_utils_lib.config_models import AppConfig
 
-__all__ = ["load_config", "configure_logging", "read_yaml"]
+__all__ = ["load_config", "configure_logging"]
 
 
 @functools.cache
@@ -21,7 +21,7 @@ def load_config(config: Path) -> AppConfig:
         ValueError: The YAML is invalid or is not a mapping.
         ValidationError: The configuration is invalid.
     """
-    config_dict: dict[str, Any] = read_yaml(config)
+    config_dict: dict[str, Any] = _read_yaml(config)
     return AppConfig.model_validate(config_dict)
 
 
@@ -30,7 +30,7 @@ def configure_logging(config: AppConfig) -> None:
     logging.config.dictConfig(config.logging)
 
 
-def read_yaml(path: Path) -> dict[str, Any]:
+def _read_yaml(path: Path) -> dict[str, Any]:
     """Return the YAML mapping in the file at ``path``."""
     try:
         content = yaml.safe_load(path.read_text(encoding="utf-8"))

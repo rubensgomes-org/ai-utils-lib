@@ -17,14 +17,17 @@ echo "Key Vault URI: $key_vault_uri"
 cd "$(dirname "$0")/../.."
 KEY_VAULT_URI="$key_vault_uri" uv run python - \
   "$config" "$endpoint" "$label_filter" <<'EOF'
+import asyncio
 import os
 import sys
 from pathlib import Path
 
-from ai_utils_lib.config.azure_load_config import load_config
+from ai_utils_lib.azure.azure_load_config import aload_config
+from ai_utils_lib.file.file_load_config import load_config
 
 print("Loading config.yaml overlaid with App Configuration...")
-config = load_config(Path(sys.argv[1]), *sys.argv[2:4])
+yaml_config = load_config(Path(sys.argv[1]))
+config = asyncio.run(aload_config(yaml_config, *sys.argv[2:4]))
 api_key_env = config.model.api_key_env
 if config.model.api_key is None:
     api_key_source = "not resolved"

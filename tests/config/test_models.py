@@ -1,11 +1,11 @@
-"""Tests for ai_utils_lib.config.models."""
+"""Tests for ai_utils_lib.config_models."""
 
 from typing import Any
 
 import pytest
 from pydantic import ValidationError
 
-from ai_utils_lib.config.models import Azure, Model
+from ai_utils_lib.config_models import Azure, Model
 
 API_KEY_ENV = "TEST_API_KEY"
 ENV_API_KEY = "env-secret"

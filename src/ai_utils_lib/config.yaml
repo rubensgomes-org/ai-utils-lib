@@ -5,17 +5,19 @@
 # Microsoft Azure Configuration
 # ====================================================================
 azure:
-    # App Configuration prefix
-    #   app config key example: 
+    # Fixed: do not store in Azure App Configuration
+    # app config key example: 
     #   "ai-utils-lib/azure/app_config_prefix"
     # NOTE: label is used to define environments (e.g., dev, lap, prod...)
     app_config_prefix: "ai-utils-lib/"
+    # Fixed: do not store in Azure App Configuration
     # app configuration prefix separator
     app_config_separator: "/"
-    # Key Vault secret prefix
-    #   secret key example: 
+    # Fixed: do not store in Azure App Configuration
+    # key vault secret key example: 
     #   "ai-utils-lib--NVIDIA-API-KEY"
     secret_prefix: "ai-utils-lib"
+    # Fixed: do not store in Azure App Configuration
     # Key Vault secret separator
     secret_separator: "--"
 
@@ -33,9 +35,16 @@ foundry:
 mcp:
     calculator:
         url: "http://127.0.0.1:8080/mcp"
+        #######################################################################
+        # ATTENTION: OAuth is currently NOT supported for Azure App
+        # Configuration. Implementation still to be done.
+        #######################################################################
+        # Fixed (not supported): do not store in Azure App Configuration
         is_oauth: false
+        # Fixed (not supported): do not store in Azure App Configuration
         # location to store OAuth token in the local machine
         token_dir: "~/.oauth_tokens"
+        # Fixed (not supported): do not store in Azure App Configuration
         # local port temporarily used by the OAuth callback
         callback_port: 10000
 
@@ -69,13 +78,20 @@ model:
 # Optional section: may be completely removed
 # ====================================================================
 web:
-    host: "127.0.0.1"
-    # ensure below port does not conflict with other services.
-    port: 9090
+    # Fixed: do not store in Azure App Configuration
+    # IP of the running Azure ACA container
+    host: "0.0.0.0"
+    # Fixed: do not store in Azure App Configuration
+    # Port of the running ACA container
+    port: 8080
 
 # ====================================================================
 # Logging Configuration
 # ====================================================================
+#######################################################################
+# ATTENTION: Logging levels are currently NOT supported for Azure App
+# Configuration. Implementation still to be done.
+#######################################################################
 logging:
     version: 1
     disable_existing_loggers: false
