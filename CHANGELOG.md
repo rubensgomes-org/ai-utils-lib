@@ -39,6 +39,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `config.yaml` path instead of a package; `test_key_vault.sh` defaults to
   the `ai-utils-lib--NVIDIA-API-KEY` secret.
 - SonarCloud also analyzes `.github`; `poe clean` removes `coverage.xml`.
+- `README.md` lists the Entra ID and Foundry utilities, notes active
+  development, and shows the `openai` 3.37+ requirement.
 - Raised the minimum versions of several dependencies.
 - **Breaking:** moved the bundled `config.yaml` from `ai_utils_lib.config`
   to `ai_utils_lib`.

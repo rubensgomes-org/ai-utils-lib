@@ -2,7 +2,7 @@
 
 [![python](https://img.shields.io/badge/python-3.14%2B-0969da?logo=python)](https://www.python.org/downloads/release/python-3147/)
 [![poetry](https://img.shields.io/badge/poetry-2.5%2B-0969da?logo=poetry)](https://python-poetry.org/)
-[![OpenAI](https://img.shields.io/badge/OpenAI-3.22%2B-8250df?logo=openai)](https://github.com/openai/openai-python)
+[![OpenAI](https://img.shields.io/badge/OpenAI-3.37%2B-8250df?logo=openai)](https://github.com/openai/openai-python)
 [![GitHub](https://img.shields.io/badge/GitHub-Actions-0969da?logo=github+actions)](https://github.com/features/actions)
 [![Microsoft](https://img.shields.io/badge/Microsoft-Azure-0969da)](https://azure.microsoft.com/en-us)
 [![AI](https://img.shields.io/badge/AI-Assisted-d29922?logo=claude+code)](https://github.com/rubensgomes-org/ai-utils-lib/blob/main/AI_DISCLAIMER.md)
@@ -13,14 +13,23 @@ his AI agentic software development projects.  This library is focused on
 implementing utilities to be used in Microsoft Foundry AI client apps and
 agents.
 
+> [!IMPORTANT]
+> This project is under active development; APIs may change.
+
 ---
 
 ## Features
 
-- **YAML Config** — API function to load and read config.yaml files
-- **Azure App Configuration** — API function to load and read Azure App Configuration settings
-- **Azure Key Vault** — API function to load and read Azure Key Vault secrets
-- **Foundry Utilities** — API to create create credential and get project clients
+### General
+
+- **YAML Config** — loads YAML config files into Pydantic models
+
+### Microsoft Azure/Foundry
+
+- **Azure App Configuration** — loads Azure App Configuration settings
+- **Azure Key Vault** — reads Azure Key Vault secrets
+- **Entra ID** — provides auto-renewed bearer tokens for AI clients
+- **Foundry** — creates Foundry project and OpenAI clients
 
 ## AI Disclaimer
 
@@ -34,8 +43,6 @@ tools. For details on usage, limits, and review practices, please see the
 - pip
 
 ## Installation
-
-1. Install using `pip`
 
 ```bash
 pip install ai-utils-lib
