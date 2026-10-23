@@ -4,7 +4,7 @@
 set -euo pipefail
 
 endpoint="${1:-https://appcs-rgomes-lab.azconfig.io}"
-key_filter="${2:-ca-mathagent/*}"
+key_filter="${2:-ai-utils-lib/*}"
 label_filter="${3:-lab}"
 
 echo "Endpoint: $endpoint"

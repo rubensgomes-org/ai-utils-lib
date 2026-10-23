@@ -29,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `foundry.project_endpoint` is optional and defaults to `None`.
 - The bundled `config.yaml` sets `azure.app_config_prefix` to
   `ai-utils-lib/` and `azure.secret_prefix` to `ai-utils-lib`.
+- The bundled `config.yaml` and `config/azure_appcs_config_<env>.yaml` set
+  `model.api_key_env` to `NVIDIA_API_KEY`.
 - `scripts/initvars.sh` manages the Azure and `TF_VAR_*` Actions variables
   and the `AZURE_CLIENT_SECRET` secret used by the `kv-*` workflows, and
   the `FOUNDRY_API_KEY`, `NVIDIA_API_KEY` and `OPENAI_API_KEY` secrets

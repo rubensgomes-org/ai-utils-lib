@@ -22,9 +22,9 @@ LABEL_FILTER = "lab"
 VAULT_URL = "https://kv-test.vault.azure.net/"
 # secret_prefix + secret_separator + dashed api_key_env of the bundled
 # config.yaml
-SECRET_NAME = "ai-utils-lib--DUMMY-API-KEY"
+SECRET_NAME = "ai-utils-lib--NVIDIA-API-KEY"
 SECRET_VALUE = "kv-secret"
-API_KEY_ENV = "DUMMY_API_KEY"
+API_KEY_ENV = "NVIDIA_API_KEY"
 
 
 @pytest.fixture(autouse=True)
@@ -152,7 +152,7 @@ def test_load_config_names_secret_with_overridden_secret_prefix(
     load_config(BUNDLED_CONFIG, ENDPOINT, LABEL_FILTER)
 
     read_secret_mock.assert_awaited_once_with(
-        credential_mock, VAULT_URL, "kv--DUMMY-API-KEY"
+        credential_mock, VAULT_URL, "kv--NVIDIA-API-KEY"
     )
 
 

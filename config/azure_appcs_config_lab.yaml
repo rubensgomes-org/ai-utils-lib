@@ -19,7 +19,7 @@ model:
     api_style: "responses"
     base_url: "https://dummyurl.change.it/v1"
     name: "dummy-model-name"
-    api_key_env: "DUMMY_API_KEY"
+    api_key_env: "NVIDIA_API_KEY"
     instructions: >-
         Dummy system instructions for the model.  Change it to your own instructions.
     is_stateful: false
