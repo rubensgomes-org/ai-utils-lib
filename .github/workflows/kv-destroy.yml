@@ -1,0 +1,47 @@
+# =============================================================================
+# KV Destroy
+#
+# DESTRUCTIVE. Destroys the Key Vault and its dependencies (App
+# Configuration, managed identities and resource groups) by calling the
+# reusable KV Destroy workflow in the Terraform IaC `azure-iac` repo. Vault
+# secrets are purged and NOT recoverable.
+# =============================================================================
+name: KV Destroy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment_name:
+        description: 'Estate environment to destroy.'
+        required: true
+        type: choice
+        options:
+          - dev
+          - lab
+      confirm:
+        description: >
+          DESTROYS THE KEY VAULT AND EVERY SECRET IN IT, APP CONFIGURATION,
+          THE SHARED UAMI AND ALL RESOURCE GROUPS. Choose "Yes" to confirm.
+        required: true
+        type: choice
+        default: "No"
+        options:
+          - "No"
+          - "Yes"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kv-${{ inputs.environment_name }}
+  cancel-in-progress: false
+
+jobs:
+  destroy-kv:
+    name: Destroy the Key Vault
+    uses: rubensgomes-org/azure-iac/.github/workflows/kv-destroy.yml@v0
+    with:
+      environment_name: ${{ inputs.environment_name }}
+      confirm: ${{ inputs.confirm }}
+    secrets:
+      AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}

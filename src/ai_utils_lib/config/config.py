@@ -2,6 +2,7 @@
 
 import logging
 import os
+from pathlib import Path
 
 from ai_utils_lib.config.azure_load_config import (
     aload_config as _aload_azure_config,
@@ -19,8 +20,8 @@ __all__ = ["aload_config", "load_config"]
 logger = logging.getLogger(__name__)
 
 
-def load_config(package: str) -> AppConfig:
-    """Load the ``config.yaml`` of ``package`` for the current runtime.
+def load_config(config: Path) -> AppConfig:
+    """Load the ``config.yaml`` file at ``config`` for the current runtime.
 
     When ``APP_CONFIG_ENDPOINT`` is set, the YAML is overlaid with Azure App
     Configuration settings labeled ``APP_ENV``; otherwise only the YAML is
@@ -34,16 +35,16 @@ def load_config(package: str) -> AppConfig:
     """
     app_configuration = _app_configuration_source()
     if app_configuration is None:
-        return _load_file_config(package)
-    return _load_azure_config(package, *app_configuration)
+        return _load_file_config(config)
+    return _load_azure_config(config, *app_configuration)
 
 
-async def aload_config(package: str) -> AppConfig:
+async def aload_config(config: Path) -> AppConfig:
     """Async ``load_config``; App Configuration results are not cached."""
     app_configuration = _app_configuration_source()
     if app_configuration is None:
-        return _load_file_config(package)
-    return await _aload_azure_config(package, *app_configuration)
+        return _load_file_config(config)
+    return await _aload_azure_config(config, *app_configuration)
 
 
 def _app_configuration_source() -> tuple[str, str] | None:

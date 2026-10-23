@@ -1,6 +1,7 @@
 """Tests for ai_utils_lib.config.azure_load_config."""
 
 from collections.abc import Iterator
+from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -8,24 +9,20 @@ from azure.appconfiguration import ConfigurationSetting
 from pydantic import ValidationError
 from pytest_mock import MockerFixture
 
+import ai_utils_lib
 from ai_utils_lib.config.azure_load_config import aload_config, load_config
-from ai_utils_lib.config.file_load_config import (
-    load_config as load_file_config,
-)
-from ai_utils_lib.config.file_load_config import (
-    read_yaml,
-    resolve_config_path,
-)
+from ai_utils_lib.config.file_load_config import load_config as load_file_config
+from ai_utils_lib.config.file_load_config import read_yaml
 
 MODULE = "ai_utils_lib.config.azure_load_config"
-BUNDLED_CONFIG_PACKAGE = "ai_utils_lib.config"
+BUNDLED_CONFIG = Path(ai_utils_lib.__file__).with_name("config.yaml")
 ENDPOINT = "https://appcs-test.azconfig.io"
-PREFIX = "ai-utils/"
+PREFIX = "ai-utils-lib/"
 LABEL_FILTER = "lab"
 VAULT_URL = "https://kv-test.vault.azure.net/"
 # secret_prefix + secret_separator + dashed api_key_env of the bundled
 # config.yaml
-SECRET_NAME = "dummy-kv-prefix--DUMMY-API-KEY"
+SECRET_NAME = "ai-utils-lib--DUMMY-API-KEY"
 SECRET_VALUE = "kv-secret"
 API_KEY_ENV = "DUMMY_API_KEY"
 
@@ -66,7 +63,7 @@ def _setting(key: str, value: str) -> ConfigurationSetting:
 def test_load_config_queries_store_with_prefix_and_label(
     list_settings_mock: AsyncMock, credential_mock: MagicMock
 ) -> None:
-    load_config(BUNDLED_CONFIG_PACKAGE, ENDPOINT, LABEL_FILTER)
+    load_config(BUNDLED_CONFIG, ENDPOINT, LABEL_FILTER)
 
     list_settings_mock.assert_awaited_once_with(
         credential_mock, ENDPOINT, f"{PREFIX}*", LABEL_FILTER
@@ -83,7 +80,7 @@ def test_load_config_overrides_yaml_with_settings(
         _setting("web/port", "9999"),
     ]
 
-    config = load_config(BUNDLED_CONFIG_PACKAGE, ENDPOINT, LABEL_FILTER)
+    config = load_config(BUNDLED_CONFIG, ENDPOINT, LABEL_FILTER)
 
     assert config.model.name == "azure-model"
     assert config.model.temperature == 0.5
@@ -100,7 +97,7 @@ def test_load_config_adds_new_mcp_server(
         _setting("mcp/weather/token_dir", "~/.weather"),
     ]
 
-    config = load_config(BUNDLED_CONFIG_PACKAGE, ENDPOINT, LABEL_FILTER)
+    config = load_config(BUNDLED_CONFIG, ENDPOINT, LABEL_FILTER)
 
     assert config.mcp["weather"].token_dir == "~/.weather"
     assert "calculator" in config.mcp
@@ -115,17 +112,17 @@ def test_load_config_rejects_setting_conflicting_with_section(
     list_settings_mock.return_value = [_setting(key, "value") for key in keys]
 
     with pytest.raises(ValueError, match="conflicts"):
-        load_config(BUNDLED_CONFIG_PACKAGE, ENDPOINT, LABEL_FILTER)
+        load_config(BUNDLED_CONFIG, ENDPOINT, LABEL_FILTER)
 
 
 @pytest.mark.parametrize("key", ["app_config_prefix", "app_config_separator"])
 def test_load_config_ignores_differing_store_lookup_setting(
     list_settings_mock: AsyncMock, caplog: pytest.LogCaptureFixture, key: str
 ) -> None:
-    yaml_config = load_file_config(BUNDLED_CONFIG_PACKAGE)
+    yaml_config = load_file_config(BUNDLED_CONFIG)
     list_settings_mock.return_value = [_setting(f"azure/{key}", "other")]
 
-    config = load_config(BUNDLED_CONFIG_PACKAGE, ENDPOINT, LABEL_FILTER)
+    config = load_config(BUNDLED_CONFIG, ENDPOINT, LABEL_FILTER)
 
     assert getattr(config.azure, key) == getattr(yaml_config.azure, key)
     assert f"Ignoring App Configuration azure.{key}" in caplog.text
@@ -134,13 +131,13 @@ def test_load_config_ignores_differing_store_lookup_setting(
 def test_load_config_accepts_matching_store_lookup_settings(
     list_settings_mock: AsyncMock, caplog: pytest.LogCaptureFixture
 ) -> None:
-    azure = load_file_config(BUNDLED_CONFIG_PACKAGE).azure
+    azure = load_file_config(BUNDLED_CONFIG).azure
     list_settings_mock.return_value = [
         _setting("azure/app_config_prefix", azure.app_config_prefix),
         _setting("azure/app_config_separator", azure.app_config_separator),
     ]
 
-    load_config(BUNDLED_CONFIG_PACKAGE, ENDPOINT, LABEL_FILTER)
+    load_config(BUNDLED_CONFIG, ENDPOINT, LABEL_FILTER)
 
     assert "Ignoring" not in caplog.text
 
@@ -152,7 +149,7 @@ def test_load_config_names_secret_with_overridden_secret_prefix(
 ) -> None:
     list_settings_mock.return_value = [_setting("azure/secret_prefix", "kv")]
 
-    load_config(BUNDLED_CONFIG_PACKAGE, ENDPOINT, LABEL_FILTER)
+    load_config(BUNDLED_CONFIG, ENDPOINT, LABEL_FILTER)
 
     read_secret_mock.assert_awaited_once_with(
         credential_mock, VAULT_URL, "kv--DUMMY-API-KEY"
@@ -162,12 +159,12 @@ def test_load_config_names_secret_with_overridden_secret_prefix(
 def test_load_config_rejects_empty_separator(
     mocker: MockerFixture, list_settings_mock: AsyncMock
 ) -> None:
-    config_dict = read_yaml(resolve_config_path(BUNDLED_CONFIG_PACKAGE))
+    config_dict = read_yaml(BUNDLED_CONFIG)
     config_dict["azure"]["app_config_separator"] = ""
     mocker.patch(f"{MODULE}.read_yaml", return_value=config_dict)
 
     with pytest.raises(ValidationError):
-        load_config(BUNDLED_CONFIG_PACKAGE, ENDPOINT, LABEL_FILTER)
+        load_config(BUNDLED_CONFIG, ENDPOINT, LABEL_FILTER)
 
     list_settings_mock.assert_not_awaited()
 
@@ -177,12 +174,12 @@ def test_load_config_completes_prefix_with_separator(
     list_settings_mock: AsyncMock,
     credential_mock: MagicMock,
 ) -> None:
-    config_dict = read_yaml(resolve_config_path(BUNDLED_CONFIG_PACKAGE))
+    config_dict = read_yaml(BUNDLED_CONFIG)
     config_dict["azure"]["app_config_prefix"] = PREFIX.removesuffix("/")
     mocker.patch(f"{MODULE}.read_yaml", return_value=config_dict)
     list_settings_mock.return_value = [_setting("model/name", "azure-model")]
 
-    config = load_config(BUNDLED_CONFIG_PACKAGE, ENDPOINT, LABEL_FILTER)
+    config = load_config(BUNDLED_CONFIG, ENDPOINT, LABEL_FILTER)
 
     list_settings_mock.assert_awaited_once_with(
         credential_mock, ENDPOINT, f"{PREFIX}*", LABEL_FILTER
@@ -197,14 +194,14 @@ def test_load_config_rejects_setting_with_empty_segment(
     list_settings_mock.return_value = [_setting(key, "value")]
 
     with pytest.raises(ValueError, match="empty segment"):
-        load_config(BUNDLED_CONFIG_PACKAGE, ENDPOINT, LABEL_FILTER)
+        load_config(BUNDLED_CONFIG, ENDPOINT, LABEL_FILTER)
 
 
 @pytest.mark.usefixtures("list_settings_mock")
 def test_load_config_reads_api_key_from_key_vault(
     read_secret_mock: AsyncMock, credential_mock: MagicMock
 ) -> None:
-    config = load_config(BUNDLED_CONFIG_PACKAGE, ENDPOINT, LABEL_FILTER)
+    config = load_config(BUNDLED_CONFIG, ENDPOINT, LABEL_FILTER)
 
     read_secret_mock.assert_awaited_once_with(
         credential_mock, VAULT_URL, SECRET_NAME
@@ -219,7 +216,7 @@ def test_load_config_prefers_api_key_env_over_key_vault(
 ) -> None:
     monkeypatch.setenv(API_KEY_ENV, "env-secret")
 
-    config = load_config(BUNDLED_CONFIG_PACKAGE, ENDPOINT, LABEL_FILTER)
+    config = load_config(BUNDLED_CONFIG, ENDPOINT, LABEL_FILTER)
 
     read_secret_mock.assert_not_called()
     assert config.model.api_key == "env-secret"
@@ -230,7 +227,7 @@ def test_load_config_skips_key_vault_without_api_key_env(
 ) -> None:
     list_settings_mock.return_value = [_setting("model/api_key_env", "")]
 
-    config = load_config(BUNDLED_CONFIG_PACKAGE, ENDPOINT, LABEL_FILTER)
+    config = load_config(BUNDLED_CONFIG, ENDPOINT, LABEL_FILTER)
 
     read_secret_mock.assert_not_called()
     assert config.model.api_key is None
@@ -243,14 +240,14 @@ def test_load_config_requires_key_vault_uri(
     monkeypatch.delenv("KEY_VAULT_URI")
 
     with pytest.raises(RuntimeError, match=f"KEY_VAULT_URI.*{SECRET_NAME}"):
-        load_config(BUNDLED_CONFIG_PACKAGE, ENDPOINT, LABEL_FILTER)
+        load_config(BUNDLED_CONFIG, ENDPOINT, LABEL_FILTER)
 
     read_secret_mock.assert_not_called()
 
 
 @pytest.mark.usefixtures("list_settings_mock")
 async def test_aload_config_reads_api_key_from_key_vault() -> None:
-    config = await aload_config(BUNDLED_CONFIG_PACKAGE, ENDPOINT, LABEL_FILTER)
+    config = await aload_config(BUNDLED_CONFIG, ENDPOINT, LABEL_FILTER)
 
     assert config.model.api_key == SECRET_VALUE
 
@@ -259,7 +256,7 @@ async def test_load_config_rejects_running_event_loop(
     list_settings_mock: AsyncMock,
 ) -> None:
     with pytest.raises(RuntimeError, match="await aload_config"):
-        load_config(BUNDLED_CONFIG_PACKAGE, ENDPOINT, LABEL_FILTER)
+        load_config(BUNDLED_CONFIG, ENDPOINT, LABEL_FILTER)
 
     list_settings_mock.assert_not_awaited()
 
@@ -269,11 +266,11 @@ def test_load_config_escapes_prefix_in_key_filter(
     list_settings_mock: AsyncMock,
     credential_mock: MagicMock,
 ) -> None:
-    config_dict = read_yaml(resolve_config_path(BUNDLED_CONFIG_PACKAGE))
+    config_dict = read_yaml(BUNDLED_CONFIG)
     config_dict["azure"]["app_config_prefix"] = "a*b,c\\d/"
     mocker.patch(f"{MODULE}.read_yaml", return_value=config_dict)
 
-    load_config(BUNDLED_CONFIG_PACKAGE, ENDPOINT, LABEL_FILTER)
+    load_config(BUNDLED_CONFIG, ENDPOINT, LABEL_FILTER)
 
     list_settings_mock.assert_awaited_once_with(
         credential_mock, ENDPOINT, "a\\*b\\,c\\\\d/*", LABEL_FILTER
@@ -287,4 +284,4 @@ def test_load_config_rejects_setting_without_value(
     list_settings_mock.return_value = [ConfigurationSetting(key=key)]
 
     with pytest.raises(ValueError, match=f"{key} has no value"):
-        load_config(BUNDLED_CONFIG_PACKAGE, ENDPOINT, LABEL_FILTER)
+        load_config(BUNDLED_CONFIG, ENDPOINT, LABEL_FILTER)

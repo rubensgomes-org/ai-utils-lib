@@ -4,7 +4,7 @@
 set -euo pipefail
 
 vault_url="${1:-https://kv-rgomes-lab.vault.azure.net/}"
-secret_name="${2:-ca-mathagent--NVIDIA-API-KEY}"
+secret_name="${2:-ai-utils-lib--NVIDIA-API-KEY}"
 
 echo "Vault URL: $vault_url"
 echo "Secret name: $secret_name"

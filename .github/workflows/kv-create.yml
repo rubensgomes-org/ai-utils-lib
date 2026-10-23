@@ -1,0 +1,48 @@
+# =============================================================================
+# KV Create
+#
+# Provisions a Key Vault and its dependencies (resource groups, managed
+# identities and App Configuration) by calling the reusable KV Create
+# workflow in the Terraform IaC `azure-iac` repo.
+# =============================================================================
+name: KV Create
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment_name:
+        description: 'Estate environment to provision.'
+        required: true
+        type: choice
+        options:
+          - dev
+          - lab
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kv-${{ inputs.environment_name }}
+  cancel-in-progress: false
+
+jobs:
+  create-kv:
+    name: Create the Key Vault
+    uses: rubensgomes-org/azure-iac/.github/workflows/kv-create.yml@v0
+    with:
+      environment_name: ${{ inputs.environment_name }}
+    secrets:
+      AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+
+  summary:
+    name: Print the Key Vault URI
+    needs: [create-kv]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print the Key Vault URI
+        env:
+          KV_NAME: ${{ needs.create-kv.outputs.kv_name }}
+          KV_URI: ${{ needs.create-kv.outputs.kv_uri }}
+        run: |
+          echo "Key Vault ${KV_NAME}: ${KV_URI}"
+          echo "Key Vault ${KV_NAME}: ${KV_URI}" >> "$GITHUB_STEP_SUMMARY"

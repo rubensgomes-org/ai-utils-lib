@@ -9,7 +9,9 @@
 [![license](https://img.shields.io/badge/license-MIT-1a7f37)](https://github.com/rubensgomes-org/ai-utils-lib/blob/main/LICENSE)
 
 Rubens created this Python library of utilities to be shared and re-used across
-some of his software development projects.
+his AI agentic software development projects.  This library is focused on
+implementing utilities to be used in Microsoft Foundry AI client apps and
+agents.
 
 ---
 
@@ -18,6 +20,7 @@ some of his software development projects.
 - **YAML Config** — API function to load and read config.yaml files
 - **Azure App Configuration** — API function to load and read Azure App Configuration settings
 - **Azure Key Vault** — API function to load and read Azure Key Vault secrets
+- **Foundry Utilities** — API to create create credential and get project clients
 
 ## AI Disclaimer
 

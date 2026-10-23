@@ -1,0 +1,32 @@
+# "lab" App Configuration settings, imported under the "ai-utils-lib/"
+# prefix with label "lab". They override src/ai_utils_lib/config.yaml.
+azure:
+    secret_prefix: "ai-utils-lib"
+    secret_separator: "--"
+
+foundry:
+    project_endpoint: "https://dummyurl.change.it/foundry"
+    agent_name: "dummy-agent-name"
+
+mcp:
+    calculator:
+        url: "http://127.0.0.1:8080/mcp"
+        is_oauth: false
+        token_dir: "~/.oauth_tokens"
+        callback_port: 10000
+
+model:
+    api_style: "responses"
+    base_url: "https://dummyurl.change.it/v1"
+    name: "dummy-model-name"
+    api_key_env: "DUMMY_API_KEY"
+    instructions: >-
+        Dummy system instructions for the model.  Change it to your own instructions.
+    is_stateful: false
+    max_concurrent_prompts: 10
+    temperature: 1.0
+    timeout_seconds: 30
+
+web:
+    host: "127.0.0.1"
+    port: 9090

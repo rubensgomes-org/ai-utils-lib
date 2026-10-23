@@ -2,32 +2,26 @@
 
 import functools
 import logging.config
-from importlib.resources import files
-from importlib.resources.abc import Traversable
+from pathlib import Path
 from typing import Any
 
 import yaml
 
 from ai_utils_lib.config.models import AppConfig
-from ai_utils_lib.constants import CONFIG_FILE_NAME
 
-__all__ = [
-    "load_config",
-    "configure_logging",
-    "read_yaml",
-    "resolve_config_path",
-]
+__all__ = ["load_config", "configure_logging", "read_yaml"]
 
 
 @functools.cache
-def load_config(package: str) -> AppConfig:
-    """Load and validate ``config.yaml`` from the root of ``package``.
+def load_config(config: Path) -> AppConfig:
+    """Load and validate the ``config.yaml`` file at ``config``.
 
-    Applications typically pass their root package name, e.g.
-    ``load_config(__package__)`` or ``load_config("my_app")``.
+    Raises:
+        FileNotFoundError: ``config`` does not exist.
+        ValueError: The YAML is invalid or is not a mapping.
+        ValidationError: The configuration is invalid.
     """
-    config_yaml_file: Traversable = resolve_config_path(package)
-    config_dict: dict[str, Any] = read_yaml(config_yaml_file)
+    config_dict: dict[str, Any] = read_yaml(config)
     return AppConfig.model_validate(config_dict)
 
 
@@ -36,17 +30,12 @@ def configure_logging(config: AppConfig) -> None:
     logging.config.dictConfig(config.logging)
 
 
-def resolve_config_path(package: str) -> Traversable:
-    """Return ``config.yaml`` located at the root ``package``."""
-    return files(package).joinpath(CONFIG_FILE_NAME)
-
-
-def read_yaml(resource: Traversable) -> dict[str, Any]:
-    """Return the YAML mapping in ``resource``."""
+def read_yaml(path: Path) -> dict[str, Any]:
+    """Return the YAML mapping in the file at ``path``."""
     try:
-        content = yaml.safe_load(resource.read_text(encoding="utf-8"))
+        content = yaml.safe_load(path.read_text(encoding="utf-8"))
     except yaml.YAMLError as error:
-        raise ValueError(f"Invalid YAML in {resource}") from error
+        raise ValueError(f"Invalid YAML in {path}") from error
     if not isinstance(content, dict):
-        raise ValueError(f"Expected a YAML mapping in {resource}")
+        raise ValueError(f"Expected a YAML mapping in {path}")
     return content

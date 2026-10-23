@@ -1,0 +1,4 @@
+# Keep in sync with the keys in azure_kv_import.yaml.
+- FOUNDRY-API-KEY
+- NVIDIA-API-KEY
+- OPENAI-API-KEY

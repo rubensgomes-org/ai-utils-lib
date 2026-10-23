@@ -1,24 +1,26 @@
 """Tests for ai_utils_lib.config.config."""
 
 from collections.abc import Iterator
+from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from azure.appconfiguration import ConfigurationSetting
 from pytest_mock import MockerFixture
 
+import ai_utils_lib
+from ai_utils_lib.config import aload_config, load_config
 from ai_utils_lib.config.azure_load_config import (
     load_config as _load_azure_config,
 )
-from ai_utils_lib.config import aload_config, load_config
 from ai_utils_lib.config.file_load_config import (
     load_config as _load_file_config,
 )
 
 AZURE_MODULE = "ai_utils_lib.config.azure_load_config"
-BUNDLED_CONFIG_PACKAGE = "ai_utils_lib.config"
+BUNDLED_CONFIG = Path(ai_utils_lib.__file__).with_name("config.yaml")
 ENDPOINT = "https://appcs-test.azconfig.io"
-PREFIX = "ai-utils/"
+PREFIX = "ai-utils-lib/"
 LABEL = "lab"
 VAULT_URL = "https://kv-test.vault.azure.net/"
 
@@ -72,7 +74,7 @@ def test_load_config_reads_app_configuration_in_azure(
         ConfigurationSetting(key=f"{PREFIX}model/name", value="azure-model")
     ]
 
-    config = load_config(BUNDLED_CONFIG_PACKAGE)
+    config = load_config(BUNDLED_CONFIG)
 
     list_settings_mock.assert_awaited_once_with(
         credential_mock, ENDPOINT, f"{PREFIX}*", LABEL
@@ -84,7 +86,7 @@ def test_load_config_reads_app_configuration_in_azure(
 def test_load_config_reads_yaml_only_locally(
     list_settings_mock: AsyncMock,
 ) -> None:
-    config = load_config(BUNDLED_CONFIG_PACKAGE)
+    config = load_config(BUNDLED_CONFIG)
 
     list_settings_mock.assert_not_called()
     assert config.model.name == "dummy-model-name"
@@ -96,7 +98,7 @@ def test_load_config_treats_empty_endpoint_as_local(
 ) -> None:
     monkeypatch.setenv("APP_CONFIG_ENDPOINT", "")
 
-    load_config(BUNDLED_CONFIG_PACKAGE)
+    load_config(BUNDLED_CONFIG)
 
     list_settings_mock.assert_not_called()
 
@@ -114,7 +116,7 @@ def test_load_config_requires_app_env_in_azure(
         monkeypatch.setenv("APP_ENV", app_env)
 
     with pytest.raises(RuntimeError, match="APP_ENV must be set"):
-        load_config(BUNDLED_CONFIG_PACKAGE)
+        load_config(BUNDLED_CONFIG)
 
     list_settings_mock.assert_not_called()
 
@@ -127,7 +129,7 @@ async def test_aload_config_reads_app_configuration_in_azure(
         ConfigurationSetting(key=f"{PREFIX}model/name", value="azure-model")
     ]
 
-    config = await aload_config(BUNDLED_CONFIG_PACKAGE)
+    config = await aload_config(BUNDLED_CONFIG)
 
     list_settings_mock.assert_awaited_once_with(
         credential_mock, ENDPOINT, f"{PREFIX}*", LABEL
@@ -139,7 +141,7 @@ async def test_aload_config_reads_app_configuration_in_azure(
 async def test_aload_config_reads_yaml_only_locally(
     list_settings_mock: AsyncMock,
 ) -> None:
-    config = await aload_config(BUNDLED_CONFIG_PACKAGE)
+    config = await aload_config(BUNDLED_CONFIG)
 
     list_settings_mock.assert_not_called()
     assert config.model.name == "dummy-model-name"

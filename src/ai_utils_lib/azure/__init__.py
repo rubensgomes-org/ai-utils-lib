@@ -1,1 +1,1 @@
-"""Azure modules for AI Utilities."""
+"""MS Azure modules for AI Utilities."""

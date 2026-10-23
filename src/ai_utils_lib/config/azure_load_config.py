@@ -5,7 +5,7 @@ import functools
 import logging
 import os
 import re
-from importlib.resources.abc import Traversable
+from pathlib import Path
 from typing import Any, NoReturn
 
 from azure.appconfiguration import ConfigurationSetting
@@ -14,7 +14,7 @@ from azure.identity.aio import DefaultAzureCredential
 
 from ai_utils_lib.azure.app_configuration import list_settings
 from ai_utils_lib.azure.key_vault import read_secret
-from ai_utils_lib.config.file_load_config import read_yaml, resolve_config_path
+from ai_utils_lib.config.file_load_config import read_yaml
 from ai_utils_lib.config.models import AppConfig, Azure
 
 __all__ = ["aload_config", "load_config"]
@@ -30,7 +30,7 @@ STORE_LOOKUP_KEYS = ("app_config_prefix", "app_config_separator")
 
 @functools.cache
 def load_config(
-    package: str, appcs_endpoint: str, label_filter: str
+    config: Path, appcs_endpoint: str, label_filter: str
 ) -> AppConfig:
     """Return the cached result of ``aload_config`` for synchronous code.
 
@@ -41,13 +41,13 @@ def load_config(
             ``aload_config`` instead.
     """
     _reject_running_loop()
-    return asyncio.run(aload_config(package, appcs_endpoint, label_filter))
+    return asyncio.run(aload_config(config, appcs_endpoint, label_filter))
 
 
 async def aload_config(
-    package: str, appcs_endpoint: str, label_filter: str
+    config: Path, appcs_endpoint: str, label_filter: str
 ) -> AppConfig:
-    """Load ``config.yaml`` from ``package`` overlaid with App Configuration.
+    """Load the ``config.yaml`` at ``config`` overlaid with App Configuration.
 
     Settings under ``azure.app_config_prefix`` and labeled ``label_filter``
     are read from the store at ``appcs_endpoint`` and override the
@@ -55,6 +55,7 @@ async def aload_config(
     the variable named by ``model.api_key_env`` holds it. Not cached.
 
     Raises:
+        FileNotFoundError: ``config`` does not exist.
         RuntimeError: Key Vault is needed but ``KEY_VAULT_URI`` is not set.
         ValueError: The YAML is invalid, ``label_filter`` contains ``*``
             or ``,``, a setting has no value, or its key has an empty
@@ -67,14 +68,13 @@ async def aload_config(
         ServiceRequestError: App Configuration or Key Vault is unreachable.
     """
     logger.debug(
-        "Loading Azure App Configuration with package: %s, "
+        "Loading Azure App Configuration with config: %s, "
         "appcs_endpoint: %s, label_filter: %s",
-        package,
+        config,
         appcs_endpoint,
         label_filter,
     )
-    config_yaml_file: Traversable = resolve_config_path(package)
-    config_dict: dict[str, Any] = read_yaml(config_yaml_file)
+    config_dict: dict[str, Any] = read_yaml(config)
     async with DefaultAzureCredential() as credential:
         return await _load_config_with_credential(
             credential, config_dict, appcs_endpoint, label_filter

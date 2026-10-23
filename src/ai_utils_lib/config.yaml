@@ -7,14 +7,15 @@
 azure:
     # App Configuration prefix
     #   app config key example: 
-    #   "ca-mathagent/azure/app_config_prefix"
-    app_config_prefix: "ai-utils/"
+    #   "ai-utils-lib/azure/app_config_prefix"
+    # NOTE: label is used to define environments (e.g., dev, lap, prod...)
+    app_config_prefix: "ai-utils-lib/"
     # app configuration prefix separator
     app_config_separator: "/"
     # Key Vault secret prefix
     #   secret key example: 
-    #   "ca-mathagent--FOUNDRY-API-KEY"
-    secret_prefix: "dummy-kv-prefix"
+    #   "ai-utils-lib--FOUNDRY-API-KEY"
+    secret_prefix: "ai-utils-lib"
     # Key Vault secret separator
     secret_separator: "--"
 
@@ -23,6 +24,7 @@ azure:
 # ====================================================================
 foundry:
     project_endpoint: "https://dummyurl.change.it/foundry"
+    agent_name: "dummy-agent-name"
 
 # ====================================================================
 # MCP Configuration

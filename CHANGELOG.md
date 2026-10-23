@@ -9,7 +9,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `foundry.project_clients.get_ai_project_clients`, an async context
+  manager yielding a Foundry `AIProjectClient` and its `AsyncOpenAI`
+  client.
+- `azure-ai-projects` and `openai` dependencies.
+- Optional `foundry.agent_name` setting in `config.yaml`.
+- `kv-create` and `kv-destroy` workflows that call the azure-iac workflows
+  of the same name to provision and destroy the Key Vault and its
+  dependencies.
+- `config-app-import` and `config-app-delete` workflows that import and
+  delete the `config/azure_appcs_config_<env>.yaml` settings in App
+  Configuration under the `ai-utils-lib/` prefix.
+- `key-vault-import` and `key-vault-delete` workflows that import and
+  delete the `FOUNDRY-API-KEY`, `NVIDIA-API-KEY` and `OPENAI-API-KEY`
+  secrets in Key Vault as `ai-utils-lib--<name>`.
+
 ### Changed
+
+- `foundry.project_endpoint` is optional and defaults to `None`.
+- The bundled `config.yaml` sets `azure.app_config_prefix` to
+  `ai-utils-lib/` and `azure.secret_prefix` to `ai-utils-lib`.
+- `scripts/initvars.sh` manages the Azure and `TF_VAR_*` Actions variables
+  and the `AZURE_CLIENT_SECRET` secret used by the `kv-*` workflows, and
+  the `FOUNDRY_API_KEY`, `NVIDIA_API_KEY` and `OPENAI_API_KEY` secrets
+  used by `key-vault-import`.
+- `scripts/tests/test_config.sh` and `test_azure_load_config.sh` take a
+  `config.yaml` path instead of a package; `test_key_vault.sh` defaults to
+  the `ai-utils-lib--NVIDIA-API-KEY` secret.
+- SonarCloud also analyzes `.github`; `poe clean` removes `coverage.xml`.
+- Raised the minimum versions of several dependencies.
+- **Breaking:** moved the bundled `config.yaml` from `ai_utils_lib.config`
+  to `ai_utils_lib`.
+- **Breaking:** the `load_config` and `aload_config` functions take
+  `config: Path`, the path to `config.yaml`, instead of `package: str`.
+- **Breaking:** removed `file_load_config.resolve_config_path` and
+  `constants.CONFIG_FILE_NAME`.
 
 ### Fixed
 

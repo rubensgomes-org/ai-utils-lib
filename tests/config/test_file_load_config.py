@@ -2,7 +2,6 @@
 
 import copy
 import logging
-import uuid
 from collections.abc import Callable, Iterator
 from pathlib import Path
 from typing import Any
@@ -11,14 +10,14 @@ import pytest
 import yaml
 from pydantic import ValidationError
 
+import ai_utils_lib
 from ai_utils_lib.config.file_load_config import configure_logging, load_config
 from ai_utils_lib.config.models import AppConfig, Web
-from ai_utils_lib.constants import CONFIG_FILE_NAME
 
-BUNDLED_CONFIG_PACKAGE = "ai_utils_lib.config"
+BUNDLED_CONFIG = Path(ai_utils_lib.__file__).with_name("config.yaml")
 PROBE_LOGGER_NAME = "tests.config.file_load_config.probe"
 
-PackageFactory = Callable[[str | None], str]
+ConfigFactory = Callable[[str], Path]
 
 
 @pytest.fixture(autouse=True)
@@ -29,22 +28,13 @@ def clear_config_cache() -> Iterator[None]:
 
 
 @pytest.fixture
-def make_package(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> PackageFactory:
-    """Create an importable package, optionally holding ``config.yaml``."""
-    monkeypatch.syspath_prepend(tmp_path)
+def make_config(tmp_path: Path) -> ConfigFactory:
+    """Write ``config_text`` to a ``config.yaml`` file in ``tmp_path``."""
 
-    def factory(config_text: str | None) -> str:
-        name = f"pkg_{uuid.uuid4().hex}"
-        package_dir = tmp_path / name
-        package_dir.mkdir()
-        (package_dir / "__init__.py").touch()
-        if config_text is not None:
-            (package_dir / CONFIG_FILE_NAME).write_text(
-                config_text, encoding="utf-8"
-            )
-        return name
+    def factory(config_text: str) -> Path:
+        config = tmp_path / "config.yaml"
+        config.write_text(config_text, encoding="utf-8")
+        return config
 
     return factory
 
@@ -97,7 +87,7 @@ def probe_logging_config() -> Iterator[dict[str, Any]]:
 
 
 def test_load_config_reads_bundled_config() -> None:
-    config = load_config(BUNDLED_CONFIG_PACKAGE)
+    config = load_config(BUNDLED_CONFIG)
 
     assert isinstance(config, AppConfig)
     assert config.model.name == "dummy-model-name"
@@ -106,29 +96,29 @@ def test_load_config_reads_bundled_config() -> None:
 
 
 def test_load_config_returns_cached_instance() -> None:
-    first = load_config(BUNDLED_CONFIG_PACKAGE)
+    first = load_config(BUNDLED_CONFIG)
 
-    assert load_config(BUNDLED_CONFIG_PACKAGE) is first
+    assert load_config(BUNDLED_CONFIG) is first
 
 
-def test_load_config_reads_package_config(
-    make_package: PackageFactory, valid_config: dict[str, Any]
+def test_load_config_reads_config_file(
+    make_config: ConfigFactory, valid_config: dict[str, Any]
 ) -> None:
-    package = make_package(yaml.safe_dump(valid_config))
+    config_file = make_config(yaml.safe_dump(valid_config))
 
-    config = load_config(package)
+    config = load_config(config_file)
 
     assert config.model.name == "test-model"
     assert config.model.api_style == "responses"
 
 
 def test_load_config_rejects_invalid_yaml(
-    make_package: PackageFactory,
+    make_config: ConfigFactory,
 ) -> None:
-    package = make_package("foundry: [unclosed")
+    config_file = make_config("foundry: [unclosed")
 
     with pytest.raises(ValueError, match="Invalid YAML"):
-        load_config(package)
+        load_config(config_file)
 
 
 @pytest.mark.parametrize(
@@ -137,58 +127,93 @@ def test_load_config_rejects_invalid_yaml(
     ids=["empty", "list", "string", "number"],
 )
 def test_load_config_rejects_non_mapping_yaml(
-    make_package: PackageFactory, config_text: str
+    make_config: ConfigFactory, config_text: str
 ) -> None:
-    package = make_package(config_text)
+    config_file = make_config(config_text)
 
     with pytest.raises(ValueError, match="Expected a YAML mapping"):
-        load_config(package)
+        load_config(config_file)
 
 
 @pytest.mark.parametrize("section", ["azure", "foundry", "model", "logging"])
 def test_load_config_rejects_missing_section(
-    make_package: PackageFactory,
+    make_config: ConfigFactory,
     valid_config: dict[str, Any],
     section: str,
 ) -> None:
     del valid_config[section]
-    package = make_package(yaml.safe_dump(valid_config))
+    config_file = make_config(yaml.safe_dump(valid_config))
 
     with pytest.raises(ValidationError, match=section):
-        load_config(package)
+        load_config(config_file)
+
+
+def test_load_config_reads_foundry_agent_name(
+    make_config: ConfigFactory, valid_config: dict[str, Any]
+) -> None:
+    valid_config["foundry"]["agent_name"] = "test-agent"
+    config_file = make_config(yaml.safe_dump(valid_config))
+
+    config = load_config(config_file)
+
+    assert config.foundry.agent_name == "test-agent"
+
+
+def test_load_config_defaults_missing_foundry_agent_name(
+    make_config: ConfigFactory, valid_config: dict[str, Any]
+) -> None:
+    config_file = make_config(yaml.safe_dump(valid_config))
+
+    config = load_config(config_file)
+
+    assert config.foundry.agent_name is None
+
+
+def test_load_config_defaults_missing_foundry_project_endpoint(
+    make_config: ConfigFactory, valid_config: dict[str, Any]
+) -> None:
+    del valid_config["foundry"]["project_endpoint"]
+    config_file = make_config(yaml.safe_dump(valid_config))
+
+    config = load_config(config_file)
+
+    assert config.foundry.project_endpoint is None
+
+
+def test_load_config_rejects_empty_foundry_agent_name(
+    make_config: ConfigFactory, valid_config: dict[str, Any]
+) -> None:
+    valid_config["foundry"]["agent_name"] = ""
+    config_file = make_config(yaml.safe_dump(valid_config))
+
+    with pytest.raises(ValidationError, match="agent_name"):
+        load_config(config_file)
 
 
 def test_load_config_defaults_missing_optional_sections(
-    make_package: PackageFactory, valid_config: dict[str, Any]
+    make_config: ConfigFactory, valid_config: dict[str, Any]
 ) -> None:
     del valid_config["mcp"]
     del valid_config["web"]
-    package = make_package(yaml.safe_dump(valid_config))
+    config_file = make_config(yaml.safe_dump(valid_config))
 
-    config = load_config(package)
+    config = load_config(config_file)
 
     assert config.mcp == {}
     assert config.web == Web()
 
 
 def test_load_config_raises_when_config_file_missing(
-    make_package: PackageFactory,
+    tmp_path: Path,
 ) -> None:
-    package = make_package(None)
-
     with pytest.raises(FileNotFoundError):
-        load_config(package)
-
-
-def test_load_config_raises_when_package_missing() -> None:
-    with pytest.raises(ModuleNotFoundError):
-        load_config(f"missing_{uuid.uuid4().hex}")
+        load_config(tmp_path / "config.yaml")
 
 
 def test_configure_logging_applies_logging_section(
     probe_logging_config: dict[str, Any],
 ) -> None:
-    config = load_config(BUNDLED_CONFIG_PACKAGE).model_copy(
+    config = load_config(BUNDLED_CONFIG).model_copy(
         update={"logging": probe_logging_config}
     )
 
@@ -203,7 +228,7 @@ def test_configure_logging_applies_logging_section(
 def test_configure_logging_leaves_config_unchanged(
     probe_logging_config: dict[str, Any],
 ) -> None:
-    config = load_config(BUNDLED_CONFIG_PACKAGE).model_copy(
+    config = load_config(BUNDLED_CONFIG).model_copy(
         update={"logging": probe_logging_config}
     )
     original = copy.deepcopy(config.logging)
