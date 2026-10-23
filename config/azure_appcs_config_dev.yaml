@@ -3,6 +3,7 @@
 
 foundry:
     project_endpoint: "https://dummyurl.change.it/foundry"
+    resource_endpoint: "https://dummyurl.change.it/"
     agent_name: "dummy-agent-name"
 
 mcp:

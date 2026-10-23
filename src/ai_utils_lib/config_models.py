@@ -37,6 +37,7 @@ class Foundry(_FrozenModel):
     """The ``foundry`` section of config.yaml."""
 
     project_endpoint: HttpUrl | None = None
+    resource_endpoint: HttpUrl | None = None
     agent_name: str | None = Field(default=None, min_length=1)
 
 

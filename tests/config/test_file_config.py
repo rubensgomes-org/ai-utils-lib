@@ -47,7 +47,10 @@ def valid_config() -> dict[str, Any]:
             "secret_prefix": "test-prefix",
             "secret_separator": "--",
         },
-        "foundry": {"project_endpoint": "https://example.com/foundry"},
+        "foundry": {
+            "project_endpoint": "https://example.com/foundry",
+            "resource_endpoint": "https://example.com/",
+        },
         "mcp": {"calc": {"url": "https://example.com/mcp", "token_dir": "~"}},
         "model": {
             "base_url": "https://example.com/v1",
@@ -178,6 +181,17 @@ def test_load_config_defaults_missing_foundry_project_endpoint(
     config = load_config(config_file)
 
     assert config.foundry.project_endpoint is None
+
+
+def test_load_config_defaults_missing_foundry_resource_endpoint(
+    make_config: ConfigFactory, valid_config: dict[str, Any]
+) -> None:
+    del valid_config["foundry"]["resource_endpoint"]
+    config_file = make_config(yaml.safe_dump(valid_config))
+
+    config = load_config(config_file)
+
+    assert config.foundry.resource_endpoint is None
 
 
 def test_load_config_rejects_empty_foundry_agent_name(
