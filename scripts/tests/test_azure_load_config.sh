@@ -22,8 +22,8 @@ import os
 import sys
 from pathlib import Path
 
-from ai_utils_lib.azure.azure_load_config import aload_config
-from ai_utils_lib.file.file_load_config import load_config
+from ai_utils_lib.azure.azure_config import aload_config
+from ai_utils_lib.file.file_config import load_config
 
 print("Loading config.yaml overlaid with App Configuration...")
 yaml_config = load_config(Path(sys.argv[1]))

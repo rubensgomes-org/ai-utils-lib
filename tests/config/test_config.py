@@ -10,9 +10,9 @@ from pytest_mock import MockerFixture
 
 import ai_utils_lib
 from ai_utils_lib.config import aload_config
-from ai_utils_lib.file.file_load_config import load_config as _load_file_config
+from ai_utils_lib.file.file_config import load_config as _load_file_config
 
-AZURE_MODULE = "ai_utils_lib.azure.azure_load_config"
+AZURE_MODULE = "ai_utils_lib.azure.azure_config"
 BUNDLED_CONFIG = Path(ai_utils_lib.__file__).with_name("config.yaml")
 ENDPOINT = "https://appcs-test.azconfig.io"
 PREFIX = "ai-utils-lib/"

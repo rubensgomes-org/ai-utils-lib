@@ -1,4 +1,4 @@
-"""Tests for ai_utils_lib.azure.azure_load_config."""
+"""Tests for ai_utils_lib.azure.azure_config."""
 
 from collections.abc import Iterator
 from pathlib import Path
@@ -10,11 +10,11 @@ from pydantic import ValidationError
 from pytest_mock import MockerFixture
 
 import ai_utils_lib
-from ai_utils_lib.azure.azure_load_config import aload_config
+from ai_utils_lib.azure.azure_config import aload_config
 from ai_utils_lib.config_models import AppConfig
-from ai_utils_lib.file.file_load_config import load_config as load_file_config
+from ai_utils_lib.file.file_config import load_config as load_file_config
 
-MODULE = "ai_utils_lib.azure.azure_load_config"
+MODULE = "ai_utils_lib.azure.azure_config"
 BUNDLED_CONFIG = Path(ai_utils_lib.__file__).with_name("config.yaml")
 ENDPOINT = "https://appcs-test.azconfig.io"
 PREFIX = "ai-utils-lib/"

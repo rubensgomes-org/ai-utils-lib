@@ -4,11 +4,9 @@ import logging
 import os
 from pathlib import Path
 
-from ai_utils_lib.azure.azure_load_config import (
-    aload_config as _aload_azure_config,
-)
+from ai_utils_lib.azure.azure_config import aload_config as _aload_azure_config
 from ai_utils_lib.config_models import AppConfig
-from ai_utils_lib.file.file_load_config import load_config as _load_file_config
+from ai_utils_lib.file.file_config import load_config as _load_file_config
 
 __all__ = ["aload_config"]
 
@@ -16,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 async def aload_config(config: Path) -> AppConfig:
-    """Load the ``config.yaml`` at ``config`` for the current runtime.
+    """Load the YAML configuration file located at ``config``.
 
     When ``APP_CONFIG_ENDPOINT`` is set, the YAML is overlaid with App
     Configuration settings labeled ``APP_ENV``; those are not cached.

@@ -6,11 +6,12 @@ from contextlib import asynccontextmanager
 from azure.ai.projects.aio import AIProjectClient
 from azure.identity.aio import DefaultAzureCredential
 from openai import AsyncOpenAI
+from pydantic import HttpUrl
 
 
 @asynccontextmanager
 async def get_ai_project_clients(
-    endpoint: str,
+    endpoint: HttpUrl,
 ) -> AsyncGenerator[tuple[AIProjectClient, AsyncOpenAI]]:
     """
     Yields open, authenticated clients and ensures they are safely
@@ -25,8 +26,9 @@ async def get_ai_project_clients(
         # 4. Active CLI signed in account
         DefaultAzureCredential() as credential,
         AIProjectClient(
-            endpoint=endpoint, credential=credential
+            endpoint=str(endpoint), credential=credential
         ) as project_client,
+        # AsyncOpenAI
         project_client.get_openai_client() as openai_client,
     ):
         yield project_client, openai_client

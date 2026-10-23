@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Breaking:** `azure.azure_load_config` is renamed to `azure.azure_config`,
+  and `file.file_load_config` to `file.file_config`.
+
 ### Fixed
 
 ## [0.0.12] - 2026-10-23
