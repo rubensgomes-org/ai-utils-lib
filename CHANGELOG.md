@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [0.0.14] - 2026-10-23
+
+### Added
+
 - Optional `foundry.resource_endpoint` setting, defaulting to `None`.
 
 ### Changed
