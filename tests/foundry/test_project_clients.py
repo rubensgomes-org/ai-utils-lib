@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from unittest.mock import MagicMock
 
 import pytest
+from pydantic import HttpUrl
 from pytest_mock import MockerFixture
 
 from ai_utils_lib.foundry.project_clients import get_ai_project_clients
@@ -46,7 +47,7 @@ def foundry_mocks(mocker: MockerFixture) -> FoundryMocks:
 async def test_get_ai_project_clients_yields_open_clients(
     foundry_mocks: FoundryMocks,
 ) -> None:
-    async with get_ai_project_clients(ENDPOINT) as clients:
+    async with get_ai_project_clients(HttpUrl(ENDPOINT)) as clients:
         assert clients == (
             foundry_mocks.project_client,
             foundry_mocks.openai_client,
@@ -56,7 +57,7 @@ async def test_get_ai_project_clients_yields_open_clients(
 async def test_get_ai_project_clients_connects_to_endpoint(
     foundry_mocks: FoundryMocks,
 ) -> None:
-    async with get_ai_project_clients(ENDPOINT):
+    async with get_ai_project_clients(HttpUrl(ENDPOINT)):
         pass
 
     foundry_mocks.project_client_class.assert_called_once_with(
@@ -67,7 +68,7 @@ async def test_get_ai_project_clients_connects_to_endpoint(
 async def test_get_ai_project_clients_closes_clients_on_exit(
     foundry_mocks: FoundryMocks,
 ) -> None:
-    async with get_ai_project_clients(ENDPOINT):
+    async with get_ai_project_clients(HttpUrl(ENDPOINT)):
         pass
 
     _assert_all_closed(foundry_mocks)
@@ -77,7 +78,7 @@ async def test_get_ai_project_clients_closes_clients_on_error(
     foundry_mocks: FoundryMocks,
 ) -> None:
     with pytest.raises(RuntimeError):
-        async with get_ai_project_clients(ENDPOINT):
+        async with get_ai_project_clients(HttpUrl(ENDPOINT)):
             raise RuntimeError("consumer failed")
 
     _assert_all_closed(foundry_mocks)

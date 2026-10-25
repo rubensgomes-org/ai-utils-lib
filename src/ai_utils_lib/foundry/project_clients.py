@@ -8,6 +8,8 @@ from azure.identity.aio import DefaultAzureCredential
 from openai import AsyncOpenAI
 from pydantic import HttpUrl
 
+__all__ = ["get_ai_project_clients"]
+
 
 @asynccontextmanager
 async def get_ai_project_clients(
