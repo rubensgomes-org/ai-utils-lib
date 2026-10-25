@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [0.0.15] - 2026-10-25
+
+### Added
+
 - `foundry.client_mgr.AIClientManager`, which keeps Foundry project and
   OpenAI clients open between application startup and shutdown. It fetches
   agents and conversation items, adds conversation items, and posts
