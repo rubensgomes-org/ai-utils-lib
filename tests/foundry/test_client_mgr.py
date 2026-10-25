@@ -118,9 +118,8 @@ async def test_initialize_connects_to_endpoint_as_string(
     )
 
 
-async def test_initialize_twice_raises(
-    manager: AIClientManager, foundry_mocks: FoundryMocks
-) -> None:
+@pytest.mark.usefixtures("foundry_mocks")
+async def test_initialize_twice_raises(manager: AIClientManager) -> None:
     await manager.initialize()
 
     with pytest.raises(RuntimeError, match="already initialized"):
@@ -161,10 +160,9 @@ async def test_close_closes_all_clients(
 
 
 @pytest.mark.parametrize("client_property", CLIENT_PROPERTIES)
+@pytest.mark.usefixtures("foundry_mocks")
 async def test_client_access_after_close_raises(
-    manager: AIClientManager,
-    foundry_mocks: FoundryMocks,
-    client_property: str,
+    manager: AIClientManager, client_property: str
 ) -> None:
     await manager.initialize()
     await manager.close()
@@ -308,10 +306,9 @@ async def test_fetch_conversation_returns_all_items(
     list_items.assert_called_once_with(conversation_id=CONVERSATION_ID)
 
 
+@pytest.mark.usefixtures("foundry_mocks")
 async def test_save_items_to_conversation_logs_items_at_debug(
-    manager: AIClientManager,
-    foundry_mocks: FoundryMocks,
-    caplog: pytest.LogCaptureFixture,
+    manager: AIClientManager, caplog: pytest.LogCaptureFixture
 ) -> None:
     caplog.set_level(logging.DEBUG, logger=LOGGER_NAME)
     await manager.initialize()
@@ -321,10 +318,9 @@ async def test_save_items_to_conversation_logs_items_at_debug(
     assert USER_MSG in caplog.text
 
 
+@pytest.mark.usefixtures("foundry_mocks")
 async def test_fetch_agent_logs_agent_details_at_debug(
-    manager: AIClientManager,
-    foundry_mocks: FoundryMocks,
-    caplog: pytest.LogCaptureFixture,
+    manager: AIClientManager, caplog: pytest.LogCaptureFixture
 ) -> None:
     caplog.set_level(logging.DEBUG, logger=LOGGER_NAME)
     await manager.initialize()
