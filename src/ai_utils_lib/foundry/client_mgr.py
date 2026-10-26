@@ -1,4 +1,4 @@
-"""MS Foundry AI Client Manager for AI Utilities"""
+"""MS Foundry AI Client Manager for AI Utilities."""
 
 import json
 import logging
@@ -6,11 +6,17 @@ from contextlib import AsyncExitStack
 from typing import Any
 
 from azure.ai.projects.aio import AIProjectClient
-from azure.ai.projects.models import AgentDetails
+from azure.ai.projects.models import (
+    AgentDetails,
+    AgentVersionDetails,
+    PromptAgentDefinition,
+    Tool,
+)
 from azure.identity.aio import DefaultAzureCredential
 from openai import AsyncOpenAI
 from openai.types.conversations import ConversationItem, ConversationItemList
 from openai.types.responses import Response, ResponseInputItemParam
+from openai.types.responses.response_input_param import ResponseInputParam
 from pydantic import HttpUrl
 
 __all__ = ["AIClientManager"]
@@ -95,13 +101,10 @@ class AIClientManager:
                 conversation_id,
                 json.dumps(items, indent=_INDENT, default=str),
             )
-        items_list: ConversationItemList = (
-            await self.openai_client.conversations.items.create(
-                conversation_id=conversation_id,
-                items=items,
-            )
+        return await self.openai_client.conversations.items.create(
+            conversation_id=conversation_id,
+            items=items,
         )
-        return items_list
 
     async def fetch_agent(self, server_agent_name: str) -> AgentDetails:
         """Fetch a server-side agent from the Foundry Agent Service."""
@@ -148,18 +151,22 @@ class AIClientManager:
         )
 
     async def post_conversation_to_agent(
-        self, conversation_id: str, server_agent_name: str
+        self,
+        conversation_id: str,
+        server_agent_name: str,
+        agent_input: str | ResponseInputParam = "",
     ) -> Response:
         """Send previously stored conversation to server-side agent."""
-        # "agent_reference": This key tells the Azure backend that the request
-        # should be routed through the Agent Service rather than being treated
-        # as a standard, raw LLM completion call.
         logger.debug(
             "Posting conversation id %s to server-side agent %s",
             conversation_id,
             server_agent_name,
         )
-        response: Response = await self.openai_client.responses.create(
+        # "agent_reference" routes the request through the Agent Service
+        # rather than a raw LLM completion. The service builds the model
+        # prompt server-side from the agent's instructions, model, tools and
+        # the stored conversation items; the caller never sees that prompt.
+        return await self.openai_client.responses.create(
             conversation=conversation_id,
             extra_body={
                 "agent_reference": {
@@ -167,9 +174,34 @@ class AIClientManager:
                     "type": "agent_reference",
                 }
             },
-            input="",
+            input=agent_input,
         )
-        return response
+
+    async def create_agent(
+        self,
+        agent_name: str,
+        model: str,
+        instructions: str,
+        tools: list[Tool] | None = None,
+    ) -> AgentVersionDetails:
+        """
+        Create a new version of a server-side agent, creating the agent
+        if it does not exist.
+        """
+        logger.info("Creating agent version with name: %s", agent_name)
+        return await self.project_client.agents.create_version(
+            agent_name=agent_name,
+            definition=PromptAgentDefinition(
+                model=model,
+                instructions=instructions,
+                tools=tools,
+            ),
+        )
+
+    async def delete_agent(self, agent_name: str) -> None:
+        """Delete the whole agent, including all its versions."""
+        logger.info("Deleting agent with name: %s", agent_name)
+        await self.project_client.agents.delete(agent_name=agent_name)
 
     async def close(self) -> None:
         """Close the clients during application shutdown. Idempotent."""

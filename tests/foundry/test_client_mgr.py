@@ -18,6 +18,8 @@ ENDPOINT = "https://test.services.ai.azure.com/api/projects/test-project"
 AGENT_NAME = "test-agent"
 CONVERSATION_ID = "conv-123"
 USER_MSG = "Hello, agent"
+MODEL = "gpt-test"
+INSTRUCTIONS = "Be helpful."
 USER_ITEM: ResponseInputItemParam = {
     "type": "message",
     "role": "user",
@@ -69,6 +71,8 @@ def foundry_mocks(mocker: MockerFixture) -> FoundryMocks:
     project_client = _async_context_mock(mocker)
     project_client.get_openai_client.return_value = openai_client
     project_client.agents.get = mocker.AsyncMock(return_value=agent_details)
+    project_client.agents.create_version = mocker.AsyncMock()
+    project_client.agents.delete = mocker.AsyncMock()
     project_client_class = mocker.patch(
         f"{MODULE}.AIProjectClient", return_value=project_client
     )
@@ -261,6 +265,47 @@ async def test_post_conversation_to_agent_routes_through_agent(
     )
 
 
+async def test_post_conversation_to_agent_forwards_input(
+    manager: AIClientManager, foundry_mocks: FoundryMocks
+) -> None:
+    await manager.initialize()
+
+    await manager.post_conversation_to_agent(
+        CONVERSATION_ID, AGENT_NAME, [USER_ITEM]
+    )
+
+    create_response = foundry_mocks.openai_client.responses.create
+    assert create_response.call_args.kwargs["input"] == [USER_ITEM]
+
+
+async def test_create_agent_creates_prompt_agent_version(
+    manager: AIClientManager, foundry_mocks: FoundryMocks
+) -> None:
+    await manager.initialize()
+
+    agent = await manager.create_agent(AGENT_NAME, MODEL, INSTRUCTIONS)
+
+    create_version = foundry_mocks.project_client.agents.create_version
+    assert agent is create_version.return_value
+    kwargs = create_version.call_args.kwargs
+    assert kwargs["agent_name"] == AGENT_NAME
+    assert kwargs["definition"].kind == "prompt"
+    assert kwargs["definition"].model == MODEL
+    assert kwargs["definition"].instructions == INSTRUCTIONS
+
+
+async def test_delete_agent_deletes_named_agent(
+    manager: AIClientManager, foundry_mocks: FoundryMocks
+) -> None:
+    await manager.initialize()
+
+    await manager.delete_agent(AGENT_NAME)
+
+    foundry_mocks.project_client.agents.delete.assert_awaited_once_with(
+        agent_name=AGENT_NAME
+    )
+
+
 async def test_fetch_agent_returns_named_agent(
     manager: AIClientManager, foundry_mocks: FoundryMocks
 ) -> None:
@@ -366,6 +411,8 @@ async def test_debuglog_conversation_skips_fetch_above_debug(
         ("fetch_agent", (AGENT_NAME,)),
         ("fetch_conversation", (CONVERSATION_ID,)),
         ("post_conversation_to_agent", (CONVERSATION_ID, AGENT_NAME)),
+        ("create_agent", (AGENT_NAME, MODEL, INSTRUCTIONS)),
+        ("delete_agent", (AGENT_NAME,)),
     ],
 )
 async def test_client_methods_before_initialize_raise(
