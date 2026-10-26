@@ -54,7 +54,8 @@ class Model(_FrozenModel):
     """The ``model`` section of config.yaml."""
 
     api_style: Literal["chat", "responses"] = "responses"
-    base_url: HttpUrl
+    # `base_url` may be None if the model is hosted by Microsoft Foundry
+    base_url: HttpUrl | None = None
     name: str = Field(min_length=1)
     # `api_key_env` may be None if we are using Azure Entra ID credential
     api_key_env: str | None = None

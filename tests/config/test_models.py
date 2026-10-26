@@ -72,3 +72,10 @@ def test_azure_rejects_empty_separator(separator: str) -> None:
                 separator: "",
             }
         )
+
+
+def test_model_base_url_defaults_to_none() -> None:
+    model = Model.model_validate(
+        {"name": "test-model", "instructions": "Test instructions."}
+    )
+    assert model.base_url is None
