@@ -31,7 +31,8 @@ async def aload_config(
 
     Raises:
         RuntimeError: Key Vault is needed but ``KEY_VAULT_URI`` is not set.
-        ValueError: ``label_filter`` contains ``*`` or ``,``, a setting has
+        ValueError: ``app_config`` has no ``azure`` section,
+            ``label_filter`` contains ``*`` or ``,``, a setting has
             no value, or its key has an empty segment or conflicts with
             another, or the Key Vault secret name or value is invalid.
         ValidationError: The merged configuration is invalid.
@@ -47,12 +48,13 @@ async def aload_config(
         appcs_endpoint,
         label_filter,
     )
+    azure: Azure = _required_azure(app_config)
     async with DefaultAzureCredential() as credential:
         settings: dict[str, Any] = await _load_settings(
             credential,
             appcs_endpoint,
-            app_config.azure.app_config_separator,
-            app_config.azure.app_config_prefix,
+            azure.app_config_separator,
+            azure.app_config_prefix,
             label_filter,
         )
         merged_dict: dict[str, Any] = _deep_merge(
@@ -70,10 +72,12 @@ async def _with_api_key(
     Key Vault is read only when the variable named by
     ``model.api_key_env`` did not provide the key.
     """
+    if app_config.model is None:
+        return app_config
     api_key_env: str | None = app_config.model.api_key_env
     if not api_key_env or app_config.model.api_key:
         return app_config
-    secret_name: str = _secret_name(app_config.azure, api_key_env)
+    secret_name: str = _secret_name(_required_azure(app_config), api_key_env)
     # KEY_VAULT_URI is an environment variable set in every ACA by
     # Rubens' Terraform azure-iac project.
     vault_url: str | None = os.environ.get("KEY_VAULT_URI")
@@ -87,6 +91,17 @@ async def _with_api_key(
     api_key: str = await read_secret(credential, vault_url, secret_name)
     model = app_config.model.model_copy(update={"api_key": api_key})
     return app_config.model_copy(update={"model": model})
+
+
+def _required_azure(app_config: AppConfig) -> Azure:
+    """Return the ``azure`` section of ``app_config``.
+
+    Raises:
+        ValueError: ``app_config`` has no ``azure`` section.
+    """
+    if app_config.azure is None:
+        _raise_value_error("The azure config section is required.")
+    return app_config.azure
 
 
 def _secret_name(azure: Azure, api_key_env: str) -> str:

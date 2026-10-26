@@ -11,6 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The `azure` section of `config.yaml` is optional, and `AppConfig.azure`
+  defaults to `None`. `azure.azure_config.aload_config` raises `ValueError`
+  without it.
+- The `model` section of `config.yaml` is optional, and `AppConfig.model`
+  defaults to `None`. `azure.azure_config.aload_config` skips Key Vault
+  without it.
+
 ### Fixed
 
 ## [0.0.16] - 2026-10-26

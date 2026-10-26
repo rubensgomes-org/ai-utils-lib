@@ -66,6 +66,7 @@ def _setting(key: str, value: str) -> ConfigurationSetting:
 
 
 def _with_prefix(app_config: AppConfig, prefix: str) -> AppConfig:
+    assert app_config.azure is not None
     azure = app_config.azure.model_copy(update={"app_config_prefix": prefix})
     return app_config.model_copy(update={"azure": azure})
 
@@ -222,6 +223,18 @@ async def test_aload_config_skips_key_vault_without_api_key_env(
 
 
 @pytest.mark.usefixtures("list_settings_mock")
+async def test_aload_config_skips_key_vault_without_model_section(
+    app_config: AppConfig, read_secret_mock: AsyncMock
+) -> None:
+    app_config = app_config.model_copy(update={"model": None})
+
+    config = await aload_config(app_config, ENDPOINT, LABEL_FILTER)
+
+    read_secret_mock.assert_not_called()
+    assert config.model is None
+
+
+@pytest.mark.usefixtures("list_settings_mock")
 async def test_aload_config_requires_key_vault_uri(
     app_config: AppConfig,
     monkeypatch: pytest.MonkeyPatch,
@@ -257,3 +270,14 @@ async def test_aload_config_rejects_setting_without_value(
 
     with pytest.raises(ValueError, match=f"{key} has no value"):
         await aload_config(app_config, ENDPOINT, LABEL_FILTER)
+
+
+async def test_aload_config_requires_azure_section(
+    app_config: AppConfig, list_settings_mock: AsyncMock
+) -> None:
+    app_config = app_config.model_copy(update={"azure": None})
+
+    with pytest.raises(ValueError, match="azure config section"):
+        await aload_config(app_config, ENDPOINT, LABEL_FILTER)
+
+    list_settings_mock.assert_not_called()

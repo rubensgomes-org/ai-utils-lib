@@ -97,9 +97,9 @@ class Web(_FrozenModel):
 class AppConfig(_FrozenModel):
     """The full config.yaml."""
 
-    azure: Azure
+    azure: Azure | None = None
     foundry: Foundry
     mcp: dict[str, MCP] = Field(default_factory=dict)
-    model: Model
+    model: Model | None = None
     web: Web = Field(default_factory=Web)
     logging: dict[str, Any]

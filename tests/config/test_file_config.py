@@ -138,7 +138,7 @@ def test_load_config_rejects_non_mapping_yaml(
         load_config(config_file)
 
 
-@pytest.mark.parametrize("section", ["azure", "foundry", "model", "logging"])
+@pytest.mark.parametrize("section", ["foundry", "logging"])
 def test_load_config_rejects_missing_section(
     make_config: ConfigFactory,
     valid_config: dict[str, Any],
@@ -149,6 +149,17 @@ def test_load_config_rejects_missing_section(
 
     with pytest.raises(ValidationError, match=section):
         load_config(config_file)
+
+
+def test_load_config_defaults_missing_azure(
+    make_config: ConfigFactory, valid_config: dict[str, Any]
+) -> None:
+    del valid_config["azure"]
+    config_file = make_config(yaml.safe_dump(valid_config))
+
+    config = load_config(config_file)
+
+    assert config.azure is None
 
 
 def test_load_config_reads_foundry_agent_name(
@@ -208,12 +219,14 @@ def test_load_config_defaults_missing_optional_sections(
     make_config: ConfigFactory, valid_config: dict[str, Any]
 ) -> None:
     del valid_config["mcp"]
+    del valid_config["model"]
     del valid_config["web"]
     config_file = make_config(yaml.safe_dump(valid_config))
 
     config = load_config(config_file)
 
     assert config.mcp == {}
+    assert config.model is None
     assert config.web == Web()
 
 
