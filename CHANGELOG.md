@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+### Fixed
+
+## [0.0.18] - 2026-10-26
+
+### Added
+
+### Changed
+
 - `model.base_url` in `config.yaml` is optional, and `Model.base_url`
   defaults to `None`.
 
