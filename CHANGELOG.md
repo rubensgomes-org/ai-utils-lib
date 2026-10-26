@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [0.0.16] - 2026-10-26
+
+### Added
+
 - `AIClientManager.create_agent`, which creates a prompt agent version, and
   `AIClientManager.delete_agent`, which deletes an agent and all its versions.
 - Optional `agent_input` parameter for
