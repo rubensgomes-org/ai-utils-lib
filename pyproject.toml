@@ -23,19 +23,19 @@ classifiers = [
 ]
 dependencies = [
     "colorlog (>=6.12.0,<7)",
-    "pydantic (>=2.14.1,<3)",
+    "pydantic (>=2.14.3,<3)",
     "pyyaml (>=6.0.3,<7)",
     # ------ >>> Microsoft Azure dependencies <<< ---------
     # aiohttp: transport for the Azure  async clients
     "aiohttp (>=3.14.5,<4)",
     "azure-appconfiguration (>=1.10,<2)",
     "azure-core (>=1.41,<2)",
-    "azure-identity (>=1.26,<2)",
-    "azure-keyvault-secrets (>=4.11.3,<5)",
+    "azure-identity (>=1.27.0,<2)",
+    "azure-keyvault-secrets (>=4.12.0,<5)",
     # ------ >>> Microsoft Foundry dependencies <<< -------
-    "azure-ai-projects (>=2.9,<3)",
+    "azure-ai-projects (>=2.10.0,<3)",
     # ------ >>> Other AI dependencies <<< ----------------
-    "openai (>=3.37,<4)",
+    "openai (>=3.46.0,<4)",
 ]
 
 [build-system]
@@ -45,20 +45,20 @@ build-backend = "poetry.core.masonry.api"
 [dependency-groups]
 dev = [
     "black (>=26.10.1,<27)",
-    "flake8 (>=7.4.1,<8)",
+    "flake8 (>=7.5.0,<8)",
     "isort (>=9.0.2,<10)",
-    "mypy (>=2.4,<3)",
+    "mypy (>=2.4.1,<3)",
     "pip-audit (>=2.10.1,<3)",
     "poethepoet (>=0.49,<1)",
     "poetry (>=2.5.1,<3)",
     "pylint (>=4.1.3,<5)",
     "pysonar (>=1.9.0,<2)",
     "types-pyyaml (>=6.0.12,<7)",
-    "uv (>=0.13.5,<1)",
+    "uv (>=0.13.7,<1)",
 ]
 test = [
-    "coverage (>=7.17,<8)",
-    "pytest (>=9.1.1,<10)",
+    "coverage (>=7.17.2,<8)",
+    "pytest (>=9.2.0,<10)",
     "pytest-asyncio (>=1.4,<2)",
     "pytest-cov (>=7.1,<8)",
     "pytest-mock (>=3.17,<4)",
